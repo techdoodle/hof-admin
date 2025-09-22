@@ -13,12 +13,12 @@ export const environments: Record<string, Environment> = {
     },
     staging: {
         name: 'staging',
-        apiUrl: process.env.REACT_APP_API_URL_STAGING || 'https://hof-backend-staging.railway.app',
+        apiUrl: process.env.REACT_APP_API_URL || 'https://hof-web-app-backend-staging.up.railway.app',
         label: 'Staging',
     },
     production: {
         name: 'production',
-        apiUrl: process.env.REACT_APP_API_URL_PROD || 'https://hof-backend-prod.railway.app',
+        apiUrl: process.env.REACT_APP_API_URL || 'https://hof-web-app-backend-production.up.railway.app',
         label: 'Production',
     },
 };
