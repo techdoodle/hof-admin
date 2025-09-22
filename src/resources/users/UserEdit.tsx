@@ -71,25 +71,6 @@ const PreferredTeamSelect = () => {
   );
 };
 
-const transformData = (data: any) => {
-  // Transform data before sending to API
-  const transformedData = { ...data };
-
-  // Convert city object to cityId if needed
-  if (data.city?.id) {
-    transformedData.cityId = data.city.id;
-    delete transformedData.city;
-  }
-
-  // Convert preferredTeam object to preferredTeamId if needed
-  if (data.preferredTeam?.id) {
-    transformedData.preferredTeamId = data.preferredTeam.id;
-    delete transformedData.preferredTeam;
-  }
-
-  return transformedData;
-};
-
 export const UserEdit = () => {
   const { permissions } = usePermissions();
   const canEditRole = ['admin', 'super_admin'].includes(permissions);

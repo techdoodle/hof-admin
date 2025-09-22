@@ -3,7 +3,6 @@ import {
     List,
     Datagrid,
     TextField,
-    ReferenceField,
     EditButton,
     DeleteButton,
     SearchInput,
@@ -26,7 +25,7 @@ export const VenueList = () => {
                 <TextField source="address" label="Address" />
                 <FunctionField
                     label="City"
-                    render={(record: any) => 
+                    render={(record: any) =>
                         record?.city ? `${record.city.cityName}, ${record.city.stateName}` : '-'
                     }
                 />

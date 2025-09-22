@@ -24,7 +24,6 @@ export const LoginPage = () => {
     const [step, setStep] = useState(0); // 0: enter mobile, 1: enter OTP
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
-    const [otpSent, setOtpSent] = useState(false);
     const login = useLogin();
     const notify = useNotify();
 
@@ -70,7 +69,6 @@ export const LoginPage = () => {
                 mobile
             }));
 
-            setOtpSent(true);
             setStep(1);
             notify('OTP sent successfully to your mobile number', { type: 'success' });
         } catch (err: any) {
@@ -108,7 +106,6 @@ export const LoginPage = () => {
     const handleBack = () => {
         setStep(0);
         setOtp('');
-        setOtpSent(false);
         setError('');
         localStorage.removeItem('otpData');
     };
