@@ -96,9 +96,18 @@ export const dataProvider: DataProvider = {
 
   create: async (resource, params) => {
     try {
-      const url = `/admin/${resource}`;
-      const response = await apiClient.post(url, params.data);
-      return { data: response.data };
+      let url;
+      if (resource === 'match-participants') {
+        // Special case for match participants
+        const { matchId, ...participantData } = params.data;
+        url = `/admin/matches/${matchId}/participants`;
+        const response = await apiClient.post(url, participantData);
+        return { data: { ...response.data, id: response.data.matchParticipantId } };
+      } else {
+        url = `/admin/${resource}`;
+        const response = await apiClient.post(url, params.data);
+        return { data: response.data };
+      }
     } catch (error: any) {
       const message = error.response?.data?.message || error.message || 'An error occurred';
       throw new Error(message);
@@ -107,8 +116,20 @@ export const dataProvider: DataProvider = {
 
   update: async (resource, params) => {
     try {
+      let transformedData = { ...params.data };
+
+      // Transform venue object to just ID for matches
+      if (resource === 'matches' && transformedData.venue && typeof transformedData.venue === 'object') {
+        transformedData.venue = transformedData.venue.id;
+      }
+
+      // Transform footballChief object to just ID for matches
+      if (resource === 'matches' && transformedData.footballChief && typeof transformedData.footballChief === 'object') {
+        transformedData.footballChief = transformedData.footballChief.id;
+      }
+
       const url = `/admin/${resource}/${params.id}`;
-      const response = await apiClient.patch(url, params.data);
+      const response = await apiClient.patch(url, transformedData);
       return { data: response.data };
     } catch (error: any) {
       const message = error.response?.data?.message || error.message || 'An error occurred';
@@ -132,9 +153,18 @@ export const dataProvider: DataProvider = {
 
   delete: async (resource, params) => {
     try {
-      const url = `/admin/${resource}/${params.id}`;
-      const response = await apiClient.delete(url);
-      return { data: response.data };
+      let url;
+      if (resource === 'match-participants') {
+        // Special case for match participants
+        // We need to extract matchId and userId from the record
+        const response = await apiClient.get(`/${resource}/${params.id}`);
+        const participant = response.data;
+        url = `/admin/matches/${participant.match.matchId}/participants/${participant.user.id}`;
+      } else {
+        url = `/admin/${resource}/${params.id}`;
+      }
+      await apiClient.delete(url);
+      return { data: params.previousData as any };
     } catch (error: any) {
       const message = error.response?.data?.message || error.message || 'An error occurred';
       throw new Error(message);

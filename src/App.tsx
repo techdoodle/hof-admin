@@ -10,7 +10,7 @@ import { LoginPage } from './components/LoginPage';
 // Resource components
 import { UserList, UserEdit, UserCreate, UserShow } from './resources/users';
 import { MatchList, MatchEdit, MatchCreate, MatchShow } from './resources/matches';
-import { MatchParticipantList } from './resources/matchParticipants';
+import { MatchParticipantList, MatchParticipantCreate } from './resources/matchParticipants';
 import { StatsUpload } from './resources/statsUpload';
 import { VenueList, VenueEdit, VenueCreate } from './resources/venues';
 
@@ -77,6 +77,7 @@ const App = () => (
     <Resource
       name="match-participants"
       list={MatchParticipantList}
+      create={MatchParticipantCreate}
       icon={GroupIcon}
       options={{ label: 'Participants' }}
     />

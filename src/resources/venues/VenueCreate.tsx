@@ -10,8 +10,13 @@ import {
 import { Box, Typography } from '@mui/material';
 
 export const VenueCreate = () => {
+    const transform = (data: any) => ({
+        ...data,
+        cityId: data.cityId?.id || data.cityId, // Extract just the ID from the city object
+    });
+
     return (
-        <Create>
+        <Create transform={transform}>
             <SimpleForm>
                 <Typography variant="h6" gutterBottom>
                     Venue Details
@@ -40,7 +45,7 @@ export const VenueCreate = () => {
                                 validate={required()}
                                 fullWidth
                                 format={value => value?.id || value}
-                                parse={value => ({ id: value })}
+                                parse={value => (value)}
                             />
                         </ReferenceInput>
                     </Box>
