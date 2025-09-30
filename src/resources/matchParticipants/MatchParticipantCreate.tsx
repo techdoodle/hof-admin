@@ -7,7 +7,6 @@ import {
   TextInput,
   BooleanInput,
   required,
-  useGetList,
 } from 'react-admin';
 import { useLocation, useSearchParams } from 'react-router-dom';
 
