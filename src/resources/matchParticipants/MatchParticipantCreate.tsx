@@ -7,7 +7,6 @@ import {
   TextInput,
   BooleanInput,
   required,
-  useGetList,
 } from 'react-admin';
 import { useLocation, useSearchParams } from 'react-router-dom';
 
@@ -21,10 +20,6 @@ export const MatchParticipantCreate = () => {
     searchParams.get('matchId') ||
     new URLSearchParams(location.search).get('matchId');
 
-  const { data: users } = useGetList('users', {
-    pagination: { page: 1, perPage: 1000 },
-    sort: { field: 'firstName', order: 'ASC' }
-  });
 
   const transform = (data: any) => ({
     ...data,

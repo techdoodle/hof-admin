@@ -57,7 +57,7 @@ export const StatsUpload = () => {
     const [previewData, setPreviewData] = useState<PreviewData | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [success, setSuccess] = useState(false);
+    const [, setSuccess] = useState(false);
     const [uploadResults, setUploadResults] = useState<any>(null);
 
     const onDrop = useCallback((acceptedFiles: File[]) => {
