@@ -13,6 +13,7 @@ import { MatchList, MatchEdit, MatchCreate, MatchShow } from './resources/matche
 import { MatchParticipantList, MatchParticipantCreate } from './resources/matchParticipants';
 import { StatsUpload } from './resources/statsUpload';
 import { VenueList, VenueEdit, VenueCreate } from './resources/venues';
+import { MatchStatsEdit } from './resources/matchStats';
 
 // Icons
 import PersonIcon from '@mui/icons-material/Person';
@@ -85,6 +86,7 @@ const App = () => (
     {/* Stats Upload - All admin roles */}
     <CustomRoutes>
       <Route path="/stats-upload" element={<StatsUpload />} />
+      <Route path="/match-stats/:matchId/edit" element={<MatchStatsEdit />} />
     </CustomRoutes>
 
     {/* Venue Management */}

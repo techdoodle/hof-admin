@@ -8,12 +8,55 @@ import {
   NumberField,
   FunctionField,
   useRecordContext,
+  Button,
 } from 'react-admin';
-import { Typography } from '@mui/material';
+import { Typography, Box } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
+import EditIcon from '@mui/icons-material/Edit';
+import UploadIcon from '@mui/icons-material/Upload';
 
 const MatchTitle = () => {
   const record = useRecordContext();
   return <span>Match {record ? `#${record.matchId}` : ''}</span>;
+};
+
+const StatsActions = () => {
+  const record = useRecordContext();
+  const navigate = useNavigate();
+
+  if (!record) return null;
+
+  const handleViewEditStats = () => {
+    navigate(`/match-stats/${record.matchId}/edit`);
+  };
+
+  const handleUploadStats = () => {
+    navigate(`/stats-upload?matchId=${record.matchId}`);
+  };
+
+  return (
+    <Box sx={{ mt: 2, mb: 2 }}>
+      <Typography variant="h6" gutterBottom>
+        Match Statistics
+      </Typography>
+      <Box sx={{ display: 'flex', gap: 2 }}>
+        <Button
+          variant="contained"
+          startIcon={<EditIcon />}
+          onClick={handleViewEditStats}
+        >
+          View/Edit Stats
+        </Button>
+        <Button
+          variant="outlined"
+          startIcon={<UploadIcon />}
+          onClick={handleUploadStats}
+        >
+          Upload New Stats
+        </Button>
+      </Box>
+    </Box>
+  );
 };
 
 export const MatchShow = () => {
@@ -71,6 +114,8 @@ export const MatchShow = () => {
         <TextField source="matchRecap" label="Recap" />
         <DateField source="createdAt" label="Created At" showTime />
         <DateField source="updatedAt" label="Updated At" showTime />
+
+        <StatsActions />
       </SimpleShowLayout>
     </Show>
   );
