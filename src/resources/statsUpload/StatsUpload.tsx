@@ -57,7 +57,8 @@ export const StatsUpload = () => {
     const [previewData, setPreviewData] = useState<PreviewData | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [, setSuccess] = useState(false);
+    const [success, setSuccess] = useState(false);
+    const [uploadResults, setUploadResults] = useState<any>(null);
 
     const onDrop = useCallback((acceptedFiles: File[]) => {
         if (acceptedFiles.length > 0) {
@@ -204,16 +205,56 @@ export const StatsUpload = () => {
                 },
             });
 
-            // Check if there were any failed rows
-            if (response.data.failedRows > 0 && response.data.errors?.length > 0) {
-                const errorMessages = response.data.errors.map((error: any) =>
-                    `Row ${error.row}: ${error.errors.join(', ')}`
+            // Store upload results for display
+            setUploadResults(response.data);
+
+            // Handle response with errors and warnings
+            const { failedRows, errors = [], warnings = [], totalRows, successfulRows } = response.data;
+
+            let resultMessage = '';
+
+            if (failedRows > 0 && errors.length > 0) {
+                const errorMessages = errors.map((error: any) =>
+                    `Row ${error.row}: ${Array.isArray(error.errors) ? error.errors.join(', ') : error.errors || 'Unknown error'}`
                 ).join('\n');
-                throw new Error(`Failed to upload some rows:\n${errorMessages}`);
+                resultMessage += `Failed rows:\n${errorMessages}`;
             }
 
-            setSuccess(true);
-            setActiveStep(2);
+            if (warnings.length > 0) {
+                const warningMessages = warnings.map((warning: any) =>
+                    `Row ${warning.row}: ${warning.message}`
+                ).join('\n');
+
+                if (resultMessage) {
+                    resultMessage += '\n\nWarnings:\n' + warningMessages;
+                } else {
+                    resultMessage = `Warnings:\n${warningMessages}`;
+                }
+            }
+
+            // If there are only warnings (no errors), show success with warnings
+            if (failedRows === 0 && warnings.length > 0) {
+                setError(`Upload completed with warnings:\n\n${resultMessage}\n\nSuccessfully processed ${successfulRows}/${totalRows} rows.`);
+                setSuccess(true);
+                setActiveStep(2);
+            }
+            // If there are errors, show error message but don't advance if all failed
+            else if (failedRows > 0) {
+                if (successfulRows > 0) {
+                    // Partial success - show mixed results and advance
+                    setError(`Upload completed with issues:\n\n${resultMessage}\n\nSuccessfully processed ${successfulRows}/${totalRows} rows.`);
+                    setSuccess(true);
+                    setActiveStep(2);
+                } else {
+                    // Complete failure - don't advance
+                    throw new Error(resultMessage);
+                }
+            }
+            // Complete success
+            else {
+                setSuccess(true);
+                setActiveStep(2);
+            }
         } catch (err: any) {
             setError(err.response?.data?.message || err.message || 'Failed to upload stats');
         } finally {
@@ -406,38 +447,109 @@ export const StatsUpload = () => {
         );
     };
 
-    const renderSuccessStep = () => (
-        <Card>
-            <CardContent sx={{ textAlign: 'center' }}>
-                <CheckCircleIcon sx={{ fontSize: 64, color: 'success.main', mb: 2 }} />
-                <Typography variant="h5" gutterBottom>
-                    Upload Successful!
-                </Typography>
-                <Typography variant="body1" color="textSecondary" mb={3}>
-                    Match statistics have been uploaded successfully.
-                </Typography>
-                <Box display="flex" gap={2} justifyContent="center">
-                    <Button
-                        variant="contained"
-                        onClick={() => navigate('/matches')}
-                    >
-                        Back to Matches
-                    </Button>
-                    <Button
-                        variant="outlined"
-                        onClick={() => {
-                            setActiveStep(0);
-                            setFile(null);
-                            setPreviewData(null);
-                            setSuccess(false);
-                        }}
-                    >
-                        Upload Another
-                    </Button>
-                </Box>
-            </CardContent>
-        </Card>
-    );
+    const renderSuccessStep = () => {
+        const results = uploadResults || {};
+        const hasWarnings = results.warnings && results.warnings.length > 0;
+        const hasErrors = results.errors && results.errors.length > 0;
+
+        return (
+            <Card>
+                <CardContent sx={{ textAlign: 'center' }}>
+                    <CheckCircleIcon sx={{ fontSize: 64, color: 'success.main', mb: 2 }} />
+                    <Typography variant="h5" gutterBottom>
+                        Upload {hasErrors && results.successfulRows === 0 ? 'Failed' : 'Completed'}!
+                    </Typography>
+
+                    {/* Upload Summary */}
+                    {results.totalRows && (
+                        <Box display="flex" gap={2} justifyContent="center" sx={{ mb: 3 }}>
+                            <Paper sx={{ p: 2, textAlign: 'center', minWidth: 100 }}>
+                                <Typography variant="h4" color="primary">
+                                    {results.totalRows}
+                                </Typography>
+                                <Typography variant="body2">Total Rows</Typography>
+                            </Paper>
+                            <Paper sx={{ p: 2, textAlign: 'center', minWidth: 100 }}>
+                                <Typography variant="h4" color="success.main">
+                                    {results.successfulRows || 0}
+                                </Typography>
+                                <Typography variant="body2">Successful</Typography>
+                            </Paper>
+                            {results.failedRows > 0 && (
+                                <Paper sx={{ p: 2, textAlign: 'center', minWidth: 100 }}>
+                                    <Typography variant="h4" color="error.main">
+                                        {results.failedRows}
+                                    </Typography>
+                                    <Typography variant="body2">Failed</Typography>
+                                </Paper>
+                            )}
+                            {hasWarnings && (
+                                <Paper sx={{ p: 2, textAlign: 'center', minWidth: 100 }}>
+                                    <Typography variant="h4" color="warning.main">
+                                        {results.warnings.length}
+                                    </Typography>
+                                    <Typography variant="body2">Warnings</Typography>
+                                </Paper>
+                            )}
+                        </Box>
+                    )}
+
+                    {/* Warnings Section */}
+                    {hasWarnings && (
+                        <Alert severity="warning" sx={{ mb: 3, textAlign: 'left' }}>
+                            <Typography variant="h6" gutterBottom>Warnings:</Typography>
+                            {results.warnings.map((warning: any, index: number) => (
+                                <Typography key={index} variant="body2" component="div">
+                                    Row {warning.row}: {warning.message}
+                                </Typography>
+                            ))}
+                        </Alert>
+                    )}
+
+                    {/* Errors Section */}
+                    {hasErrors && (
+                        <Alert severity="error" sx={{ mb: 3, textAlign: 'left' }}>
+                            <Typography variant="h6" gutterBottom>Errors:</Typography>
+                            {results.errors.map((error: any, index: number) => (
+                                <Typography key={index} variant="body2" component="div">
+                                    Row {error.row}: {Array.isArray(error.errors) ? error.errors.join(', ') : error.errors || 'Unknown error'}
+                                </Typography>
+                            ))}
+                        </Alert>
+                    )}
+
+                    <Typography variant="body1" color="textSecondary" mb={3}>
+                        {results.successfulRows > 0
+                            ? `Successfully processed ${results.successfulRows} out of ${results.totalRows} rows.`
+                            : 'No rows were processed successfully.'
+                        }
+                    </Typography>
+
+                    <Box display="flex" gap={2} justifyContent="center">
+                        <Button
+                            variant="contained"
+                            onClick={() => navigate('/matches')}
+                        >
+                            Back to Matches
+                        </Button>
+                        <Button
+                            variant="outlined"
+                            onClick={() => {
+                                setActiveStep(0);
+                                setFile(null);
+                                setPreviewData(null);
+                                setSuccess(false);
+                                setUploadResults(null);
+                                setError(null);
+                            }}
+                        >
+                            Upload Another
+                        </Button>
+                    </Box>
+                </CardContent>
+            </Card>
+        );
+    };
 
     if (!matchId) {
         return (
