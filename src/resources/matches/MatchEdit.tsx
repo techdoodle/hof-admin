@@ -35,7 +35,7 @@ export const MatchEdit = () => {
           <Box flex="1 1 300px">
             <SelectInput
               source="matchType"
-              label="Match Type"
+              label="Recording Type"
               choices={[
                 { id: 'recorded', name: 'Recorded' },
                 { id: 'non_recorded', name: 'Non-Recorded' },
@@ -43,6 +43,16 @@ export const MatchEdit = () => {
               validate={required()}
               fullWidth
             />
+          </Box>
+          <Box flex="1 1 300px">
+            <ReferenceInput source="matchTypeId" reference="match_types" label="Match Type">
+              <SelectInput
+                optionText="matchName"
+                optionValue="id"
+                validate={required()}
+                fullWidth
+              />
+            </ReferenceInput>
           </Box>
           <Box flex="1 1 300px">
             <DateTimeInput
@@ -75,6 +85,23 @@ export const MatchEdit = () => {
             <BooleanInput
               source="statsReceived"
               label="Stats Received"
+            />
+          </Box>
+          <Box flex="1 1 300px">
+            <NumberInput
+              source="player_capacity"
+              label="Player Capacity"
+              min={0}
+              fullWidth
+            />
+          </Box>
+          <Box flex="1 1 300px">
+            <NumberInput
+              source="buffer_capacity"
+              label="Buffer Capacity"
+              min={0}
+              defaultValue={0}
+              fullWidth
             />
           </Box>
           <Box flex="1 1 300px">

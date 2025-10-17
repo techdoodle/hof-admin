@@ -23,7 +23,6 @@ const MatchCreateToolbar = () => (
 );
 
 export const MatchCreate = () => {
-  // No need for transform as we're using direct IDs
   return (
     <Create actions={<MatchCreateToolbar />}>
       <SimpleForm>
@@ -34,7 +33,7 @@ export const MatchCreate = () => {
           <Box flex="1 1 300px">
             <SelectInput
               source="matchType"
-              label="Match Type"
+              label="Recording Type"
               choices={[
                 { id: 'recorded', name: 'Recorded' },
                 { id: 'non_recorded', name: 'Non-Recorded' },
@@ -42,6 +41,17 @@ export const MatchCreate = () => {
               validate={required()}
               fullWidth
             />
+          </Box>
+          <Box flex="1 1 300px">
+            <ReferenceInput source="matchTypeId" reference="match_types" label="Match Type">
+              <SelectInput
+                optionText="matchName"
+                optionValue="id"
+                validate={required()}
+                fullWidth
+                defaultValue={1} // Default to HOF Play
+              />
+            </ReferenceInput>
           </Box>
           <Box flex="1 1 300px">
             <DateTimeInput
@@ -75,6 +85,23 @@ export const MatchCreate = () => {
               source="statsReceived"
               label="Stats Received"
               defaultValue={false}
+            />
+          </Box>
+          <Box flex="1 1 300px">
+            <NumberInput
+              source="playerCapacity"
+              label="Player Capacity"
+              min={0}
+              fullWidth
+            />
+          </Box>
+          <Box flex="1 1 300px">
+            <NumberInput
+              source="bufferCapacity"
+              label="Buffer Capacity"
+              min={0}
+              defaultValue={0}
+              fullWidth
             />
           </Box>
           <Box flex="1 1 300px">
