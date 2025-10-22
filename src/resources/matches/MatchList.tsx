@@ -164,6 +164,23 @@ export const MatchList = () => {
                     }
                 />
                 <StatusField source="status" label="Status" />
+                <FunctionField
+                    label="Pricing"
+                    render={(record: any) => {
+                        if (record.slotPrice === 0 && record.offerPrice === 0) {
+                            return <Chip label="Free" color="success" size="small" />;
+                        }
+                        if (record.offerPrice < record.slotPrice) {
+                            return (
+                                <div>
+                                    <Chip label={`₹${record.offerPrice}`} color="error" size="small" />
+                                    <Chip label={`₹${record.slotPrice}`} color="default" size="small" style={{ textDecoration: 'line-through', marginLeft: 4 }} />
+                                </div>
+                            );
+                        }
+                        return <Chip label={`₹${record.slotPrice}`} color="primary" size="small" />;
+                    }}
+                />
                 <TextField source="matchHighlights" label="Highlights" />
                 <TextField source="matchRecap" label="Recap" />
                 <DateField source="createdAt" label="Created At" showTime />
