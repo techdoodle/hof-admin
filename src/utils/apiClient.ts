@@ -3,7 +3,7 @@ import { getCurrentEnvironment } from '../config/environment';
 
 export const apiClient = axios.create({
     baseURL: getCurrentEnvironment().apiUrl,
-    timeout: 10000,
+    timeout: 60000, // Increased to 60 seconds for video uploads
     headers: {
         'Content-Type': 'application/json',
     },

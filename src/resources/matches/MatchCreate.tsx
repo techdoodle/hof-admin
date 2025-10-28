@@ -11,6 +11,7 @@ import {
   TopToolbar,
   CreateButton,
   useInput,
+  TextInput,
 } from 'react-admin';
 import { Box, Typography } from '@mui/material';
 
@@ -84,6 +85,24 @@ export const MatchCreate = () => {
               ]}
               validate={required()}
               fullWidth
+            />
+          </Box>
+          <Box flex="1 1 300px">
+            <TextInput
+              source="teamAName"
+              label="Team A Name"
+              defaultValue="Home"
+              fullWidth
+              helperText="Optional. Defaults to 'Home' if not provided."
+            />
+          </Box>
+          <Box flex="1 1 300px">
+            <TextInput
+              source="teamBName"
+              label="Team B Name"
+              defaultValue="Away"
+              fullWidth
+              helperText="Optional. Defaults to 'Away' if not provided."
             />
           </Box>
           <Box flex="1 1 300px">

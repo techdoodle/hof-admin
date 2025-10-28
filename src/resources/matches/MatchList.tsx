@@ -21,8 +21,8 @@ import {
 } from 'react-admin';
 import { Button, Chip } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import UploadFileIcon from '@mui/icons-material/UploadFile';
 import GroupIcon from '@mui/icons-material/Group';
+import VideoCallIcon from '@mui/icons-material/VideoCall';
 
 const matchFilters = [
     <SearchInput source="search" placeholder="Search matches..." alwaysOn />,
@@ -64,10 +64,10 @@ const MatchActions = ({ record }: any) => {
         navigate(`/match-participants?filter=${JSON.stringify({ matchId: record.matchId })}`);
     };
 
-    const handleUploadStats = (e: React.MouseEvent) => {
+    const handlePlayerNationUpload = (e: React.MouseEvent) => {
         e.preventDefault();
         e.stopPropagation();
-        navigate(`/stats-upload?matchId=${record.matchId}`);
+        navigate(`/playernation/upload?matchId=${record.matchId}`);
     };
 
     return (
@@ -82,15 +82,15 @@ const MatchActions = ({ record }: any) => {
                     Participants
                 </Button>
             )}
-            {canManageParticipants && (
+            {canManageParticipants && record.matchType === 'recorded' && !record.matchStatsId && (
                 <Button
                     size="small"
-                    startIcon={<UploadFileIcon />}
-                    onClick={handleUploadStats}
+                    startIcon={<VideoCallIcon />}
+                    onClick={handlePlayerNationUpload}
                     variant="outlined"
-                    color="secondary"
+                    color="primary"
                 >
-                    Upload Stats
+                    PlayerNation
                 </Button>
             )}
             <ShowButton record={record} />

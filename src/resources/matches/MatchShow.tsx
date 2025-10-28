@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Show,
   SimpleShowLayout,
@@ -13,7 +13,8 @@ import {
 import { Typography, Box } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import EditIcon from '@mui/icons-material/Edit';
-import UploadIcon from '@mui/icons-material/Upload';
+import PersonIcon from '@mui/icons-material/Person';
+import { PlayerNationStatus, PlayerMatching } from '../playernation';
 
 const MatchTitle = () => {
   const record = useRecordContext();
@@ -30,16 +31,13 @@ const StatsActions = () => {
     navigate(`/match-stats/${record.matchId}/edit`);
   };
 
-  const handleUploadStats = () => {
-    navigate(`/stats-upload?matchId=${record.matchId}`);
-  };
 
   return (
     <Box sx={{ mt: 2, mb: 2 }}>
       <Typography variant="h6" gutterBottom>
         Match Statistics
       </Typography>
-      <Box sx={{ display: 'flex', gap: 2 }}>
+      <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
         <Button
           variant="contained"
           startIcon={<EditIcon />}
@@ -47,19 +45,30 @@ const StatsActions = () => {
         >
           View/Edit Stats
         </Button>
-        <Button
-          variant="outlined"
-          startIcon={<UploadIcon />}
-          onClick={handleUploadStats}
-        >
-          Upload New Stats
-        </Button>
       </Box>
     </Box>
   );
 };
 
+const PlayerMatchingWrapper = ({ showPlayerMatching, setShowPlayerMatching }: { 
+  showPlayerMatching: boolean; 
+  setShowPlayerMatching: (show: boolean) => void;
+}) => {
+  const record = useRecordContext();
+  
+  if (!showPlayerMatching || !record) return null;
+  
+  return (
+    <PlayerMatching 
+      matchId={record.matchId} 
+      onClose={() => setShowPlayerMatching(false)}
+    />
+  );
+};
+
 export const MatchShow = () => {
+  const [showPlayerMatching, setShowPlayerMatching] = useState(false);
+
   return (
     <Show title={<MatchTitle />}>
       <SimpleShowLayout>
@@ -116,7 +125,31 @@ export const MatchShow = () => {
         <DateField source="updatedAt" label="Updated At" showTime />
 
         <StatsActions />
+
+        {/* PlayerNation Status Section */}
+        <FunctionField
+          label="PlayerNation Integration"
+          render={(record: any) => {
+            if (record?.matchType === 'recorded' && record?.matchStatsId) {
+              return (
+                <Box sx={{ mt: 2 }}>
+                  <PlayerNationStatus 
+                    matchId={record.matchId} 
+                    onShowMatching={() => setShowPlayerMatching(true)}
+                  />
+                </Box>
+              );
+            }
+            return null;
+          }}
+        />
       </SimpleShowLayout>
+
+      {/* Player Matching Dialog */}
+      <PlayerMatchingWrapper 
+        showPlayerMatching={showPlayerMatching}
+        setShowPlayerMatching={setShowPlayerMatching}
+      />
     </Show>
   );
 };

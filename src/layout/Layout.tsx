@@ -45,7 +45,6 @@ const CustomMenu = () => (
     <Menu.ResourceItem name="users" />
     <Menu.ResourceItem name="matches" />
     <Menu.ResourceItem name="match-participants" />
-    <Menu.ResourceItem name="stats-upload" />
     <Menu.ResourceItem name="venues" />
   </Menu>
 );
