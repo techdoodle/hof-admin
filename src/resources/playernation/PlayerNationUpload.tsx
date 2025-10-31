@@ -136,12 +136,28 @@ const PlayerNationUpload: React.FC = () => {
       
       console.log('Team names from match:', { teamAName, teamBName });
 
+      // Derive match format from playerCapacity (total players → per team)
+      const deriveFormat = (capacity: number | undefined) => {
+        const perTeam = capacity && capacity > 0 ? Math.round(capacity / 2) : 11;
+        const size = Math.min(11, Math.max(5, perTeam));
+        const map: Record<number, string> = {
+          5: 'FIVE_VS_FIVE',
+          6: 'SIX_VS_SIX',
+          7: 'SEVEN_VS_SEVEN',
+          8: 'EIGHT_VS_EIGHT',
+          9: 'NINE_VS_NINE',
+          10: 'TEN_VS_TEN',
+          11: 'ELEVEN_VS_ELEVEN',
+        };
+        return map[size] || 'ELEVEN_VS_ELEVEN';
+      };
+
       setMatchInfo({
         teamA: teamAName,
         teamB: teamBName,
         matchDate: matchDate,
         matchLink: '', // User needs to provide this
-        matchFormat: 'ELEVEN_VS_ELEVEN',
+        matchFormat: deriveFormat(match.playerCapacity),
         matchDuration: 90,
         teamAScore: match.teamAScore || 0,
         teamBScore: match.teamBScore || 0,
@@ -355,7 +371,6 @@ const PlayerNationUpload: React.FC = () => {
         .map(p => ({
           name: p.name,
           hofPlayerId: p.hofPlayerId,
-          jerseyNumber: p.jerseyNumber,
           playerVideo: p.playerVideo,
           playerImages: p.playerImages || [],
           goal: p.goal || 0,
@@ -367,15 +382,31 @@ const PlayerNationUpload: React.FC = () => {
         .map(p => ({
           name: p.name,
           hofPlayerId: p.hofPlayerId,
-          jerseyNumber: p.jerseyNumber,
           playerVideo: p.playerVideo,
           playerImages: p.playerImages || [],
           goal: p.goal || 0,
           ownGoal: p.ownGoal || 0,
         }));
       
+      // Normalize match date to ISO UTC with 'Z'
+      const matchDateIso = matchInfo.matchDate ? new Date(matchInfo.matchDate).toISOString() : '';
+
+      // Normalize match link to include protocol
+      let normalizedLink = matchInfo.matchLink?.trim() || '';
+      if (normalizedLink && !/^https?:\/\//i.test(normalizedLink)) {
+        normalizedLink = `https://${normalizedLink}`;
+      }
+
+      if (!normalizedLink) {
+        notify('Match Video URL is required', { type: 'error' });
+        setLoading(false);
+        return;
+      }
+
       const payload = {
         ...matchInfo,
+        matchDate: matchDateIso,
+        matchLink: normalizedLink,
         players: {
           teamA: teamAPlayers,
           teamB: teamBPlayers,
@@ -512,9 +543,9 @@ const PlayerNationUpload: React.FC = () => {
             label="Match Date"
             type="datetime-local"
             value={matchInfo.matchDate}
-            onChange={(e) => handleMatchInfoChange('matchDate', e.target.value)}
+            InputProps={{ readOnly: true }}
             InputLabelProps={{ shrink: true }}
-            helperText={!matchInfo.matchDate ? "Required field" : "Pre-populated from match start time"}
+            helperText={matchInfo.matchDate ? "Read-only - from match data" : "Required field"}
             error={!matchInfo.matchDate}
             required
           />
@@ -522,10 +553,7 @@ const PlayerNationUpload: React.FC = () => {
         <Grid item xs={12} sm={6}>
           <FormControl fullWidth>
             <InputLabel>Match Format</InputLabel>
-            <Select
-              value={matchInfo.matchFormat}
-              onChange={(e) => handleMatchInfoChange('matchFormat', e.target.value)}
-            >
+            <Select value={matchInfo.matchFormat} disabled>
               <MenuItem value="FIVE_VS_FIVE">5 vs 5</MenuItem>
               <MenuItem value="SIX_VS_SIX">6 vs 6</MenuItem>
               <MenuItem value="SEVEN_VS_SEVEN">7 vs 7</MenuItem>
@@ -619,14 +647,7 @@ const PlayerNationUpload: React.FC = () => {
             </AccordionSummary>
             <AccordionDetails>
               <Grid container spacing={2}>
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    fullWidth
-                    label="Jersey Number"
-                    value={player.jerseyNumber}
-                    onChange={(e) => handlePlayerChange(player.id, 'jerseyNumber', e.target.value)}
-                  />
-                </Grid>
+                
                 <Grid item xs={12} sm={3}>
                   <TextField
                     fullWidth
@@ -709,12 +730,12 @@ const PlayerNationUpload: React.FC = () => {
         <CardContent>
           <Typography variant="h6" gutterBottom>Players Summary</Typography>
           <Typography>
-            <strong>Team A:</strong> {players.filter(p => p.team === 'A').length} players
-            ({players.filter(p => p.team === 'A' && p.playerVideo).length} with videos)
+            <strong>{matchInfo.teamA}:</strong> {players.filter(p => p.team === matchInfo.teamA).length} players
+            ({players.filter(p => p.team === matchInfo.teamA && p.playerVideo).length} with videos)
           </Typography>
           <Typography>
-            <strong>Team B:</strong> {players.filter(p => p.team === 'B').length} players
-            ({players.filter(p => p.team === 'B' && p.playerVideo).length} with videos)
+            <strong>{matchInfo.teamB}:</strong> {players.filter(p => p.team === matchInfo.teamB).length} players
+            ({players.filter(p => p.team === matchInfo.teamB && p.playerVideo).length} with videos)
           </Typography>
         </CardContent>
       </Card>

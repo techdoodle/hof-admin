@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import {
     List,
     Datagrid,
@@ -18,8 +18,9 @@ import {
     FilterButton,
     FunctionField,
     SelectInput,
+    ReferenceInput,
 } from 'react-admin';
-import { Button, Chip } from '@mui/material';
+import { Button, Chip, Box, Tabs, Tab } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import GroupIcon from '@mui/icons-material/Group';
 import VideoCallIcon from '@mui/icons-material/VideoCall';
@@ -36,7 +37,16 @@ const matchFilters = [
         { id: true, name: 'Received' },
         { id: false, name: 'Pending' },
     ]} />,
-    <SelectInput source="venue.id" label="Venue" />,
+    // Reference filters; backend normalizes venue.id/city.id/footballChief.id
+    <ReferenceInput source="venue" reference="venues" label="Venue">
+        <SelectInput optionText="name" optionValue="id" fullWidth />
+    </ReferenceInput>,
+    <ReferenceInput source="city" reference="cities" label="City">
+        <SelectInput optionText={(c: any) => (c ? `${c.cityName}, ${c.stateName}` : '')} optionValue="id" fullWidth />
+    </ReferenceInput>,
+    <ReferenceInput source="footballChief" reference="chiefs" label="Football Chief">
+        <SelectInput optionText="fullName" optionValue="id" fullWidth />
+    </ReferenceInput>,
 ];
 
 const MatchListActions = () => {
@@ -130,9 +140,50 @@ const StatusField = ({ record }: any) => {
 };
 
 export const MatchList = () => {
+    const [tab, setTab] = useState(1); // 0: Past, 1: Current, 2: Upcoming
+
+    const { dateFrom, dateTo } = useMemo(() => {
+        const now = new Date();
+        const iso = (d: Date) => d.toISOString();
+
+        if (tab === 0) {
+            // Past: startTime < now - 24h → dateTo = now-24h
+            const to = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+            return { dateFrom: undefined as any, dateTo: iso(to) };
+        }
+
+        if (tab === 1) {
+            // Current: startOfToday - 24h ≤ startTime ≤ now
+            const startOfToday = new Date(now);
+            startOfToday.setHours(0, 0, 0, 0);
+            const from = new Date(startOfToday.getTime() - 24 * 60 * 60 * 1000);
+            return { dateFrom: iso(from), dateTo: iso(now) };
+        }
+
+        // Upcoming: startTime > now → dateFrom = now
+        return { dateFrom: iso(now), dateTo: undefined as any };
+    }, [tab]);
+
+    const listFilter = useMemo(() => {
+        const f: any = {};
+        if (dateFrom) f.dateFrom = dateFrom;
+        if (dateTo) f.dateTo = dateTo;
+        return f;
+    }, [dateFrom, dateTo]);
+
     return (
+        <>
+        <Box sx={{ px: 2, pt: 2 }}>
+            <Tabs value={tab} onChange={(_, v) => setTab(v)} aria-label="match buckets">
+                <Tab label="Past" />
+                <Tab label="Current" />
+                <Tab label="Upcoming" />
+            </Tabs>
+        </Box>
         <List
+            key={tab}
             filters={matchFilters}
+            filter={listFilter}
             actions={<MatchListActions />}
             perPage={25}
             sort={{ field: 'startTime', order: 'DESC' }}
@@ -191,5 +242,6 @@ export const MatchList = () => {
                 />
             </Datagrid>
         </List>
+        </>
     );
 };
