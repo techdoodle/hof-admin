@@ -20,13 +20,11 @@ import {
   ListItem,
   ListItemText,
   ListItemAvatar,
-  Divider,
 } from '@mui/material';
 import {
   Person as PersonIcon,
   Search as SearchIcon,
   Check as CheckIcon,
-  Warning as WarningIcon,
 } from '@mui/icons-material';
 import { useDataProvider, useNotify } from 'react-admin';
 
@@ -67,6 +65,7 @@ const PlayerMatching: React.FC<PlayerMatchingProps> = ({ matchId, onClose }) => 
 
   useEffect(() => {
     loadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [matchId]);
 
   const loadData = async () => {

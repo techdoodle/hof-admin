@@ -86,6 +86,7 @@ const PlayerNationUpload: React.FC = () => {
 
   useEffect(() => {
     loadMatchParticipants();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [matchId]);
 
   const loadMatchParticipants = async () => {
@@ -304,6 +305,64 @@ const PlayerNationUpload: React.FC = () => {
     } catch (error) {
       console.error('Error clearing video:', error);
       notify('Failed to clear video', { type: 'error' });
+    }
+  };
+
+  // Allow uploading an existing local video file instead of recording
+  const handleLocalFileSelected = async (playerId: string, file: File | null) => {
+    try {
+      if (!file) return;
+      setUploadingVideos(prev => new Set(prev).add(playerId));
+
+      // Read file as base64
+      const reader = new FileReader();
+      reader.onload = async () => {
+        try {
+          const base64Data = reader.result as string;
+          const base64Content = base64Data.split(',')[1];
+          const participantId = parseInt(playerId.replace('player-', ''));
+
+          // Use original filename if available, fallback to generated
+          const safeName = players.find(p => p.id === playerId)?.name?.replace(/\s+/g, '-') || 'player';
+          const fileName = file.name || `${safeName}-${Date.now()}.webm`;
+          const contentType = file.type || 'video/webm';
+
+          // Upload through backend proxy
+          const response = await dataProvider.custom('admin/playernation/upload-video', {
+            method: 'POST',
+            data: {
+              fileName,
+              contentType,
+              base64Data: base64Content,
+              participantId,
+              matchId: parseInt(matchId || '0'),
+            },
+            timeout: 120000,
+          });
+
+          // Update local state with returned URL
+          handlePlayerChange(playerId, 'playerVideo', response.data.downloadUrl);
+          notify('Video uploaded successfully', { type: 'success' });
+        } catch (err) {
+          console.error('Local upload error:', err);
+          notify('Failed to upload selected video', { type: 'error' });
+        } finally {
+          setUploadingVideos(prev => {
+            const s = new Set(prev);
+            s.delete(playerId);
+            return s;
+          });
+        }
+      };
+      reader.readAsDataURL(file);
+    } catch (error) {
+      console.error('Local file select error:', error);
+      notify('Failed to process selected video', { type: 'error' });
+      setUploadingVideos(prev => {
+        const s = new Set(prev);
+        s.delete(playerId);
+        return s;
+      });
     }
   };
 
@@ -683,6 +742,23 @@ const PlayerNationUpload: React.FC = () => {
                         'Upload 360° Video'
                       )}
                     </Button>
+                    {/* Upload from device */}
+                    <input
+                      id={`file-input-${player.id}`}
+                      type="file"
+                      accept="video/webm,video/mp4,video/*"
+                      style={{ display: 'none' }}
+                      onChange={(e) => handleLocalFileSelected(player.id, e.target.files?.[0] || null)}
+                    />
+                    <label htmlFor={`file-input-${player.id}`}>
+                      <Button
+                        variant="outlined"
+                        component="span"
+                        disabled={uploadingVideos.has(player.id)}
+                      >
+                        Upload from device
+                      </Button>
+                    </label>
                     {player.playerVideo && (
                       <>
                         <Chip

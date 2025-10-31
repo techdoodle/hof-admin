@@ -6,7 +6,6 @@ import {
   ReferenceInput,
   SelectInput,
   NumberInput,
-  BooleanInput,
   required,
   TopToolbar,
   CreateButton,

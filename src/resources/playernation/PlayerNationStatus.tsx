@@ -45,6 +45,7 @@ const PlayerNationStatus: React.FC<PlayerNationStatusProps> = ({
 
   useEffect(() => {
     loadStatus();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [matchId]);
 
   const loadStatus = async () => {
