@@ -65,7 +65,7 @@ const VideoRecorder: React.FC<VideoRecorderProps> = ({
       };
 
       mediaRecorder.onstop = () => {
-        const videoBlob = new Blob(chunksRef.current, { type: 'video/webm' });
+        // Blob will be constructed in saveVideo; just mark ready
         setHasVideo(true);
         setIsProcessing(false);
       };
