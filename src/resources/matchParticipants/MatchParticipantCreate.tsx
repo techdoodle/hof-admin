@@ -5,6 +5,7 @@ import {
   ReferenceInput,
   SelectInput,
   TextInput,
+  NumberInput,
   required,
 } from 'react-admin';
 import { useLocation, useSearchParams, useNavigate } from 'react-router-dom';
@@ -28,6 +29,7 @@ export const MatchParticipantCreate = () => {
     ...data,
     matchId: matchId || data.matchId, // Ensure matchId is always included
     userId: data.user, // Backend expects userId, not user
+    cashAmount: data.cashAmount || 0, // Ensure cashAmount is passed (defaults to 0)
   });
 
   // Load match to derive team names
@@ -90,6 +92,16 @@ export const MatchParticipantCreate = () => {
           optionValue="id"
           validate={required()}
           helperText={teamChoices.length ? 'Select a team' : 'Teams load from the match details'}
+          fullWidth
+        />
+
+        <NumberInput
+          source="cashAmount"
+          label="Cash Payment Amount (₹)"
+          min={0}
+          step={1}
+          defaultValue={0}
+          helperText="Enter the amount paid in cash for this participant"
           fullWidth
         />
       </SimpleForm>
