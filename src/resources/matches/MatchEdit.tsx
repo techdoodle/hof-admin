@@ -117,6 +117,22 @@ export const MatchEdit = () => {
               <SelectInput optionText="name" validate={required()} fullWidth />
             </ReferenceInput>
           </Box>
+          <Box flex="1 1 300px">
+            <TextInput
+              source="teamAName"
+              label="Team A Name"
+              fullWidth
+              helperText="Optional. Defaults to 'Home' if not provided."
+            />
+          </Box>
+          <Box flex="1 1 300px">
+            <TextInput
+              source="teamBName"
+              label="Team B Name"
+              fullWidth
+              helperText="Optional. Defaults to 'Away' if not provided."
+            />
+          </Box>
         </Box>
 
         <Typography variant="h6" gutterBottom style={{ marginTop: 24 }}>

@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import {
   List,
   Datagrid,
   TextField,
   ReferenceField,
-  BooleanField,
   DeleteButton,
   usePermissions,
   TopToolbar,
@@ -132,6 +132,7 @@ const ParticipantsList = ({ matchId, onMatchChange }: { matchId: string; onMatch
         filter={{ matchId }}
         perPage={25}
         sort={{ field: 'id', order: 'DESC' }}
+        actions={false}
         storeKey={`match-participants-${matchId}`}
         queryOptions={{
           enabled: !!matchId,
@@ -167,7 +168,7 @@ const ParticipantsList = ({ matchId, onMatchChange }: { matchId: string; onMatch
             >
               <TextField source="firstName" />
             </ReferenceField>
-            <BooleanField source="paidStatsOptIn" label="Paid Stats" />
+            
 
             {canManageParticipants && (
               <DeleteButton
@@ -184,6 +185,7 @@ const ParticipantsList = ({ matchId, onMatchChange }: { matchId: string; onMatch
 };
 
 export const MatchParticipantList = () => {
+  const location = useLocation();
   const [selectedMatch, setSelectedMatch] = useState<string | null>(null);
   const queryClient = useQueryClient();
 
@@ -193,6 +195,24 @@ export const MatchParticipantList = () => {
       queryClient.removeQueries({ queryKey: ['match-participants'] });
     };
   }, [queryClient]);
+
+  // Read matchId from URL filter param on first load
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(location.search);
+      const filterStr = params.get('filter');
+      if (filterStr) {
+        const parsed = JSON.parse(filterStr);
+        if (parsed && parsed.matchId) {
+          setSelectedMatch(String(parsed.matchId));
+        }
+      }
+    } catch (_) {
+      // ignore parse errors
+    }
+    // run only on mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleMatchSelect = (matchId: string | null) => {
     queryClient.removeQueries({ queryKey: ['match-participants'] });

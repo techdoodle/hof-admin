@@ -6,11 +6,11 @@ import {
   ReferenceInput,
   SelectInput,
   NumberInput,
-  BooleanInput,
   required,
   TopToolbar,
   CreateButton,
   useInput,
+  TextInput,
 } from 'react-admin';
 import { Box, Typography } from '@mui/material';
 
@@ -87,6 +87,24 @@ export const MatchCreate = () => {
             />
           </Box>
           <Box flex="1 1 300px">
+            <TextInput
+              source="teamAName"
+              label="Team A Name"
+              defaultValue="Home"
+              fullWidth
+              helperText="Optional. Defaults to 'Home' if not provided."
+            />
+          </Box>
+          <Box flex="1 1 300px">
+            <TextInput
+              source="teamBName"
+              label="Team B Name"
+              defaultValue="Away"
+              fullWidth
+              helperText="Optional. Defaults to 'Away' if not provided."
+            />
+          </Box>
+          <Box flex="1 1 300px">
             <ReferenceInput source="matchTypeId" reference="match_types" label="Match Type">
               <SelectInput
                 optionText="matchName"
@@ -132,13 +150,6 @@ export const MatchCreate = () => {
         </Typography>
         <Box display="flex" flexWrap="wrap" gap={2} sx={{ mb: 3 }}>
           <Box flex="1 1 300px">
-            <BooleanInput
-              source="statsReceived"
-              label="Stats Received"
-              defaultValue={false}
-            />
-          </Box>
-          <Box flex="1 1 300px">
             <NumberInput
               source="playerCapacity"
               label="Player Capacity"
@@ -155,22 +166,7 @@ export const MatchCreate = () => {
               fullWidth
             />
           </Box>
-          <Box flex="1 1 300px">
-            <NumberInput
-              source="teamAScore"
-              label="Team A Score"
-              defaultValue={0}
-              fullWidth
-            />
-          </Box>
-          <Box flex="1 1 300px">
-            <NumberInput
-              source="teamBScore"
-              label="Team B Score"
-              defaultValue={0}
-              fullWidth
-            />
-          </Box>
+          {/* Team scores are set post-match; omitted in create form */}
           <Box flex="1 1 300px">
             <ReferenceInput
               source="footballChief"

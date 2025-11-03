@@ -184,4 +184,20 @@ export const dataProvider: DataProvider = {
       throw new Error(message);
     }
   },
+
+  custom: async (endpoint: string, options?: any) => {
+    try {
+      const { method = 'GET', data, timeout } = options || {};
+      const response = await apiClient.request({
+        method,
+        url: endpoint,
+        data,
+        timeout: timeout || 60000, // Use provided timeout or default to 60 seconds
+      });
+      return { data: response.data };
+    } catch (error: any) {
+      const message = error.response?.data?.message || error.message || 'An error occurred';
+      throw new Error(message);
+    }
+  },
 };

@@ -14,8 +14,6 @@ export const ImagePreviewInput = (props: any) => {
 
     const {
         field: { onChange, value },
-        fieldState: { error: fieldError },
-        formState: { isSubmitted }
     } = useInput(props);
 
     // Set initial preview if value exists
@@ -23,7 +21,7 @@ export const ImagePreviewInput = (props: any) => {
         if (value && !preview) {
             setPreview(value);
         }
-    }, [value]);
+    }, [value, preview]);
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];

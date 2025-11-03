@@ -204,7 +204,7 @@ export const MatchStatsEdit = () => {
                     </Typography>
 
                     <Alert severity="info" sx={{ mt: 2 }}>
-                        No statistics found for this match. Upload statistics first.
+                        No statistics found for this match. Use PlayerNation integration to upload match statistics.
                     </Alert>
 
                     <Box sx={{ mt: 3 }}>
@@ -212,15 +212,8 @@ export const MatchStatsEdit = () => {
                             variant="outlined"
                             startIcon={<ArrowBackIcon />}
                             onClick={handleBack}
-                            sx={{ mr: 2 }}
                         >
                             Back to Match
-                        </Button>
-                        <Button
-                            variant="contained"
-                            onClick={() => navigate(`/stats-upload?matchId=${matchId}`)}
-                        >
-                            Upload Statistics
                         </Button>
                     </Box>
                 </CardContent>
