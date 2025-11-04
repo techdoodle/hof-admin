@@ -135,6 +135,27 @@ const PlayerMatching: React.FC<PlayerMatchingProps> = ({ matchId, onClose }) => 
     }
   };
 
+  const handleProcessStats = async () => {
+    try {
+      setSaving(true);
+      // Ensure no unmapped players remain on client state
+      if (externalPlayers.length > 0) {
+        notify('Please finish matching all players before processing stats', { type: 'warning' });
+        setSaving(false);
+        return;
+      }
+      await dataProvider.custom(`admin/playernation/process-stats/${matchId}`, {
+        method: 'POST',
+      });
+      notify('Stats processed successfully', { type: 'success' });
+      onClose && onClose();
+    } catch (e: any) {
+      notify(e?.message || 'Failed to process stats', { type: 'error' });
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const filteredInternalPlayers = internalPlayers.filter(player => {
     const fullName = `${player.firstName} ${player.lastName}`.toLowerCase();
     const phone = player.phoneNumber.toLowerCase();
@@ -175,10 +196,10 @@ const PlayerMatching: React.FC<PlayerMatchingProps> = ({ matchId, onClose }) => 
           </Alert>
         ) : (
           <Grid container spacing={3}>
-            {/* External Players (PlayerNation) */}
+              {/* External Players (Stats System) */}
             <Grid item xs={12} md={6}>
               <Typography variant="h6" gutterBottom>
-                PlayerNation Detected Players
+                Detected Players
               </Typography>
               <List>
                 {externalPlayers.map((player) => {
@@ -307,6 +328,16 @@ const PlayerMatching: React.FC<PlayerMatchingProps> = ({ matchId, onClose }) => 
             startIcon={saving ? <CircularProgress size={16} /> : <CheckIcon />}
           >
             {saving ? 'Saving...' : `Save ${mappings.size} Mappings`}
+          </Button>
+        )}
+        {externalPlayers.length === 0 && (
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleProcessStats}
+            disabled={saving}
+          >
+            {saving ? 'Processing...' : 'Process Stats'}
           </Button>
         )}
       </DialogActions>

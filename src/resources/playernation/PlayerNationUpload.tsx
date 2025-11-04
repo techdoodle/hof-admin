@@ -255,14 +255,7 @@ const PlayerNationUpload: React.FC = () => {
       }
     }
     
-    // Validate players step (step 2) - check if all players have videos uploaded
-    if (activeStep === 2) {
-      const playersWithoutVideos = players.filter(p => !p.playerVideo);
-      if (playersWithoutVideos.length > 0) {
-        notify(`${playersWithoutVideos.length} player(s) still need to have their 360° videos uploaded`, { type: 'error' });
-        return;
-      }
-    }
+    // Players step (step 2): 360° videos are optional; allow proceeding without videos
     
     setActiveStep((prevStep) => prevStep + 1);
   };
@@ -424,28 +417,46 @@ const PlayerNationUpload: React.FC = () => {
     try {
       setLoading(true);
       
+      // Validate that all players have required hofPlayerId
+      const playersWithoutId = players.filter(p => !p.hofPlayerId || p.hofPlayerId.trim() === '');
+      if (playersWithoutId.length > 0) {
+        notify(`Some players are missing required player IDs. Please check: ${playersWithoutId.map(p => p.name).join(', ')}`, { type: 'error' });
+        setLoading(false);
+        return;
+      }
+      
       // Group players by team
       const teamAPlayers = players
-        .filter(p => p.team === matchInfo.teamA)
-        .map(p => ({
-          name: p.name,
-          hofPlayerId: p.hofPlayerId,
-          playerVideo: p.playerVideo,
-          playerImages: p.playerImages || [],
-          goal: p.goal || 0,
-          ownGoal: p.ownGoal || 0,
-        }));
+        .filter(p => p.team === matchInfo.teamA && p.hofPlayerId && p.hofPlayerId.trim() !== '')
+        .map(p => {
+          const base: any = {
+            name: p.name,
+            hofPlayerId: p.hofPlayerId, // Required by API, validated above
+            goal: p.goal || 0,
+            ownGoal: p.ownGoal || 0,
+          };
+          // Only include optional fields if they have values
+          if (p.playerVideo) base.playerVideo = p.playerVideo;
+          if (p.playerImages && p.playerImages.length > 0) base.playerImages = p.playerImages;
+          if (p.jerseyNumber && p.jerseyNumber.trim() !== '') base.jerseyNumber = p.jerseyNumber;
+          return base;
+        });
       
       const teamBPlayers = players
-        .filter(p => p.team === matchInfo.teamB)
-        .map(p => ({
-          name: p.name,
-          hofPlayerId: p.hofPlayerId,
-          playerVideo: p.playerVideo,
-          playerImages: p.playerImages || [],
-          goal: p.goal || 0,
-          ownGoal: p.ownGoal || 0,
-        }));
+        .filter(p => p.team === matchInfo.teamB && p.hofPlayerId && p.hofPlayerId.trim() !== '')
+        .map(p => {
+          const base: any = {
+            name: p.name,
+            hofPlayerId: p.hofPlayerId, // Required by API, validated above
+            goal: p.goal || 0,
+            ownGoal: p.ownGoal || 0,
+          };
+          // Only include optional fields if they have values
+          if (p.playerVideo) base.playerVideo = p.playerVideo;
+          if (p.playerImages && p.playerImages.length > 0) base.playerImages = p.playerImages;
+          if (p.jerseyNumber && p.jerseyNumber.trim() !== '') base.jerseyNumber = p.jerseyNumber;
+          return base;
+        });
       
       // Normalize match date to ISO UTC with 'Z'
       const matchDateIso = matchInfo.matchDate ? new Date(matchInfo.matchDate).toISOString() : '';
@@ -484,10 +495,10 @@ const PlayerNationUpload: React.FC = () => {
         data: payload,
       });
 
-      notify('Match submitted to PlayerNation successfully', { type: 'success' });
+      notify('Match submitted for stats successfully', { type: 'success' });
       navigate(`/matches/${matchId}`);
     } catch (error) {
-      notify('Failed to submit match to PlayerNation', { type: 'error' });
+      notify('Failed to submit match for stats', { type: 'error' });
     } finally {
       setLoading(false);
     }
@@ -851,7 +862,7 @@ const PlayerNationUpload: React.FC = () => {
   return (
     <Box sx={{ maxWidth: 1200, mx: 'auto', p: 3 }}>
       <Typography variant="h4" gutterBottom>
-        Upload Match to PlayerNation
+        Submit Match for Stats
       </Typography>
       
       <Stepper activeStep={activeStep} sx={{ mb: 4 }}>
@@ -893,7 +904,7 @@ const PlayerNationUpload: React.FC = () => {
           disabled={loading}
         >
           {loading ? <CircularProgress size={20} /> : 
-           activeStep === steps.length - 1 ? 'Submit to PlayerNation' : 'Next'}
+           activeStep === steps.length - 1 ? 'Submit for Stats' : 'Next'}
         </Button>
       </Box>
 

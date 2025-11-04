@@ -100,7 +100,7 @@ const MatchActions = ({ record }: any) => {
                     variant="outlined"
                     color="primary"
                 >
-                    PlayerNation
+                    Stats
                 </Button>
             )}
             <ShowButton record={record} />

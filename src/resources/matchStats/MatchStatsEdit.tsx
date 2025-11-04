@@ -204,7 +204,7 @@ export const MatchStatsEdit = () => {
                     </Typography>
 
                     <Alert severity="info" sx={{ mt: 2 }}>
-                        No statistics found for this match. Use PlayerNation integration to upload match statistics.
+                        No statistics found for this match. Use the Stats upload to add match statistics.
                     </Alert>
 
                     <Box sx={{ mt: 3 }}>

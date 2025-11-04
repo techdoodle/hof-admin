@@ -54,7 +54,7 @@ const PlayerNationStatus: React.FC<PlayerNationStatusProps> = ({
       const response = await dataProvider.custom(`admin/playernation/status/${matchId}`, {});
       setStatusInfo(response.data);
     } catch (error) {
-      notify('Failed to load PlayerNation status', { type: 'error' });
+      notify('Failed to load stats status', { type: 'error' });
     } finally {
       setLoading(false);
     }
@@ -82,6 +82,12 @@ const PlayerNationStatus: React.FC<PlayerNationStatusProps> = ({
         return <Chip icon={<CircularProgress size={16} />} label="Processing" color="primary" />;
       case 'PARTIAL':
         return <Chip icon={<WarningIcon />} label="Partial" color="warning" />;
+      case 'SUCCESS':
+        return <Chip icon={<CheckCircleIcon />} label="Processed" color="success" />;
+      case 'SUCCESS_WITH_UNMATCHED':
+        return <Chip icon={<WarningIcon />} label="Processed (Unmatched)" color="warning" />;
+      case 'POLL_SUCCESS_MAPPING_FAILED':
+        return <Chip icon={<WarningIcon />} label="Processed (Mapping Failed)" color="warning" />;
       case 'IMPORTED':
         return <Chip icon={<CheckCircleIcon />} label="Imported" color="success" />;
       case 'ERROR':
@@ -96,11 +102,17 @@ const PlayerNationStatus: React.FC<PlayerNationStatusProps> = ({
   const getStatusMessage = (status?: string) => {
     switch (status) {
       case 'PENDING':
-        return 'Match submitted to PlayerNation. Waiting for processing to begin.';
+        return 'Match submitted for stats. Waiting for processing to begin.';
       case 'PROCESSING':
-        return 'PlayerNation is analyzing the match. This may take several hours.';
+        return 'Stats system is analyzing the match. This may take several hours.';
       case 'PARTIAL':
         return 'Some players have been processed. Manual mapping may be required.';
+      case 'SUCCESS':
+        return 'Processing completed. Review and import stats.';
+      case 'SUCCESS_WITH_UNMATCHED':
+        return 'Processing succeeded, but some players need manual matching.';
+      case 'POLL_SUCCESS_MAPPING_FAILED':
+        return 'Processing succeeded, but stats ingestion failed for some mappings.';
       case 'IMPORTED':
         return 'All player statistics have been successfully imported.';
       case 'ERROR':
@@ -118,7 +130,8 @@ const PlayerNationStatus: React.FC<PlayerNationStatusProps> = ({
   };
 
   const canPoll = statusInfo.status === 'PENDING' || statusInfo.status === 'PROCESSING';
-  const showMatchingButton = statusInfo.status === 'PARTIAL' || statusInfo.status === 'IMPORTED';
+  const showMatchingButton = ['PARTIAL', 'SUCCESS_WITH_UNMATCHED', 'POLL_SUCCESS_MAPPING_FAILED', 'IMPORTED']
+    .includes(statusInfo.status || '');
 
   if (loading) {
     return (
@@ -136,7 +149,7 @@ const PlayerNationStatus: React.FC<PlayerNationStatusProps> = ({
     <Card>
       <CardContent>
         <Typography variant="h6" gutterBottom>
-          PlayerNation Status
+          Stats Status
         </Typography>
 
         <Grid container spacing={2} sx={{ mb: 2 }}>
@@ -209,7 +222,7 @@ const PlayerNationStatus: React.FC<PlayerNationStatusProps> = ({
           )}
         </Box>
 
-        {statusInfo.lastPollTime && (
+        {statusInfo.lastPollTime && (typeof statusInfo.lastPollTime === 'string' || typeof statusInfo.lastPollTime === 'number') && (
           <Typography variant="caption" color="text.secondary" sx={{ mt: 2, display: 'block' }}>
             Last poll: {new Date(statusInfo.lastPollTime).toLocaleString()}
           </Typography>

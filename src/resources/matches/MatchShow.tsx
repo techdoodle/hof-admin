@@ -126,9 +126,9 @@ export const MatchShow = () => {
 
         <StatsActions />
 
-        {/* PlayerNation Status Section */}
+        {/* Stats Status Section */}
         <FunctionField
-          label="PlayerNation Integration"
+          label="Stats"
           render={(record: any) => {
             if (record?.matchType === 'recorded' && record?.matchStatsId) {
               return (
