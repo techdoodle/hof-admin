@@ -23,6 +23,7 @@ import { useDataProvider, useNotify } from 'react-admin';
 interface PlayerNationStatusProps {
   matchId: number;
   onShowMatching?: () => void;
+  onShowStats?: () => void;
 }
 
 interface StatusInfo {
@@ -35,7 +36,8 @@ interface StatusInfo {
 
 const PlayerNationStatus: React.FC<PlayerNationStatusProps> = ({ 
   matchId, 
-  onShowMatching 
+  onShowMatching,
+  onShowStats,
 }) => {
   const dataProvider = useDataProvider();
   const notify = useNotify();
@@ -124,14 +126,16 @@ const PlayerNationStatus: React.FC<PlayerNationStatusProps> = ({
     }
   };
 
+  const MAX_ATTEMPTS = 24;
   const getProgressValue = () => {
     if (!statusInfo.pollAttempts) return 0;
-    return Math.min((statusInfo.pollAttempts / 12) * 100, 100);
+    return Math.min((statusInfo.pollAttempts / MAX_ATTEMPTS) * 100, 100);
   };
 
   const canPoll = statusInfo.status === 'PENDING' || statusInfo.status === 'PROCESSING';
   const showMatchingButton = ['PARTIAL', 'SUCCESS_WITH_UNMATCHED', 'POLL_SUCCESS_MAPPING_FAILED', 'IMPORTED']
     .includes(statusInfo.status || '');
+  const canViewStats = statusInfo.status === 'IMPORTED';
 
   if (loading) {
     return (
@@ -176,7 +180,7 @@ const PlayerNationStatus: React.FC<PlayerNationStatusProps> = ({
         {statusInfo.status === 'PROCESSING' && (
           <Box sx={{ mb: 2 }}>
             <Typography variant="body2" color="text.secondary" gutterBottom>
-              Polling Progress ({statusInfo.pollAttempts || 0}/12 attempts)
+              Polling Progress ({statusInfo.pollAttempts || 0}/{MAX_ATTEMPTS} attempts)
             </Typography>
             <LinearProgress 
               variant="determinate" 
@@ -218,6 +222,15 @@ const PlayerNationStatus: React.FC<PlayerNationStatusProps> = ({
               onClick={onShowMatching}
             >
               Manage Player Mappings
+            </Button>
+          )}
+          {canViewStats && onShowStats && (
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={onShowStats}
+            >
+              View Stats
             </Button>
           )}
         </Box>

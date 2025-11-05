@@ -582,7 +582,7 @@ const PlayerNationUpload: React.FC = () => {
         <Typography variant="body2">
           Team names are read-only and taken from your match data. 
           Match date and scores are pre-populated but can be edited if needed. 
-          The match video URL is required for PlayerNation processing.
+          The match video URL is required for stats processing.
         </Typography>
       </Alert>
       

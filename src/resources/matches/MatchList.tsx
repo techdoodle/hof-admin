@@ -24,6 +24,8 @@ import { Button, Chip, Box, Tabs, Tab } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import GroupIcon from '@mui/icons-material/Group';
 import VideoCallIcon from '@mui/icons-material/VideoCall';
+import RefreshIcon from '@mui/icons-material/Refresh';
+import { useDataProvider, useNotify } from 'react-admin';
 
 const matchFilters = [
     <SearchInput source="search" placeholder="Search matches..." alwaysOn />,
@@ -65,6 +67,8 @@ const MatchListActions = () => {
 const MatchActions = ({ record }: any) => {
     const navigate = useNavigate();
     const { permissions } = usePermissions();
+    const dataProvider = useDataProvider();
+    const notify = useNotify();
 
     const canEditMatches = ['football_chief', 'academy_admin', 'admin', 'super_admin'].includes(permissions);
     const canDeleteMatches = permissions === 'super_admin';
@@ -78,6 +82,17 @@ const MatchActions = ({ record }: any) => {
         e.preventDefault();
         e.stopPropagation();
         navigate(`/playernation/upload?matchId=${record.matchId}`);
+    };
+
+    const handlePollNow = async (e: React.MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        try {
+            await dataProvider.custom(`admin/playernation/poll-now/${record.matchId}`, {});
+            notify('Poll initiated', { type: 'success' });
+        } catch (err) {
+            notify('Failed to initiate poll', { type: 'error' });
+        }
     };
 
     return (
@@ -101,6 +116,16 @@ const MatchActions = ({ record }: any) => {
                     color="primary"
                 >
                     Stats
+                </Button>
+            )}
+            {canManageParticipants && record.matchStatsId && (
+                <Button
+                    size="small"
+                    startIcon={<RefreshIcon />}
+                    onClick={handlePollNow}
+                    variant="outlined"
+                >
+                    Re-poll
                 </Button>
             )}
             <ShowButton record={record} />

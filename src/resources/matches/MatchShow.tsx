@@ -68,6 +68,7 @@ const PlayerMatchingWrapper = ({ showPlayerMatching, setShowPlayerMatching }: {
 
 export const MatchShow = () => {
   const [showPlayerMatching, setShowPlayerMatching] = useState(false);
+  const navigate = useNavigate();
 
   return (
     <Show title={<MatchTitle />}>
@@ -136,6 +137,7 @@ export const MatchShow = () => {
                   <PlayerNationStatus 
                     matchId={record.matchId} 
                     onShowMatching={() => setShowPlayerMatching(true)}
+                    onShowStats={() => navigate(`/match-stats/${record.matchId}/edit`)}
                   />
                 </Box>
               );
