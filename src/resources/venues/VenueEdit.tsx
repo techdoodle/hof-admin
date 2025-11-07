@@ -9,7 +9,6 @@ import {
     required,
     useInput,
     useGetList,
-    useRecordContext,
 } from 'react-admin';
 import { Box, Typography, Divider } from '@mui/material';
 import { ImagePreviewInput } from '../../components/ImagePreviewInput';
@@ -53,7 +52,6 @@ const CityInput = ({ onChange: parentOnChange, source, ...props }: { onChange: (
 
 export const VenueEdit = () => {
     const [coordinates, setCoordinates] = useState<{ latitude: number | null; longitude: number | null }>({ latitude: null, longitude: null });
-    const record = useRecordContext();
 
     const handleCityChange = ({ latitude, longitude }: { latitude: number; longitude: number }) => {
         setCoordinates({ latitude, longitude });
