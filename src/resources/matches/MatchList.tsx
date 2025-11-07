@@ -135,34 +135,6 @@ const MatchActions = ({ record }: any) => {
     );
 };
 
-const StatusField = ({ record }: any) => {
-    console.log('recorddd', record);
-
-    if (!record?.startTime) {
-        return null;
-    }
-    const now = new Date();
-    const matchDate = new Date(record.startTime);
-
-    let status = 'upcoming';
-    let color = 'primary';
-
-    if (matchDate < now) {
-        status = 'completed';
-        color = 'success';
-    } else if (matchDate.getTime() - now.getTime() < 24 * 60 * 60 * 1000) {
-        status = 'today';
-        color = 'warning';
-    }
-
-    return (
-        <Chip
-            label={status.charAt(0).toUpperCase() + status.slice(1)}
-            color={color as any}
-            size="small"
-        />
-    );
-};
 
 export const MatchList = () => {
     const [tab, setTab] = useState(1); // 0: Past, 1: Current, 2: Upcoming
@@ -216,6 +188,11 @@ export const MatchList = () => {
             <Datagrid rowClick={false}>
                 <TextField source="matchId" label="ID" />
                 <TextField source="matchType" label="Match Type" />
+                <NumberField source="playerCapacity" label="Player Capacity" />
+                <FunctionField
+                    label="Enrolled Participants"
+                    render={(record: any) => record.participantCount ?? 0}
+                />
                 <DateField source="startTime" label="Start Time" showTime />
                 <DateField source="endTime" label="End Time" showTime />
                 <BooleanField source="statsReceived" label="Stats Received" />
@@ -239,7 +216,6 @@ export const MatchList = () => {
                         record.venue?.city ? `${record.venue.city.cityName}, ${record.venue.city.stateName}` : '-'
                     }
                 />
-                <StatusField source="status" label="Status" />
                 <FunctionField
                     label="Pricing"
                     render={(record: any) => {
