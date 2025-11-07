@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import {
     List,
     Datagrid,
@@ -18,11 +18,14 @@ import {
     FilterButton,
     FunctionField,
     SelectInput,
+    ReferenceInput,
 } from 'react-admin';
-import { Button, Chip } from '@mui/material';
+import { Button, Chip, Box, Tabs, Tab } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import UploadFileIcon from '@mui/icons-material/UploadFile';
 import GroupIcon from '@mui/icons-material/Group';
+import VideoCallIcon from '@mui/icons-material/VideoCall';
+import RefreshIcon from '@mui/icons-material/Refresh';
+import { useDataProvider, useNotify } from 'react-admin';
 
 const matchFilters = [
     <SearchInput source="search" placeholder="Search matches..." alwaysOn />,
@@ -36,7 +39,16 @@ const matchFilters = [
         { id: true, name: 'Received' },
         { id: false, name: 'Pending' },
     ]} />,
-    <SelectInput source="venue.id" label="Venue" />,
+    // Reference filters; backend normalizes venue.id/city.id/footballChief.id
+    <ReferenceInput source="venue" reference="venues" label="Venue">
+        <SelectInput optionText="name" optionValue="id" fullWidth />
+    </ReferenceInput>,
+    <ReferenceInput source="city" reference="cities" label="City">
+        <SelectInput optionText={(c: any) => (c ? `${c.cityName}, ${c.stateName}` : '')} optionValue="id" fullWidth />
+    </ReferenceInput>,
+    <ReferenceInput source="footballChief" reference="chiefs" label="Football Chief">
+        <SelectInput optionText="fullName" optionValue="id" fullWidth />
+    </ReferenceInput>,
 ];
 
 const MatchListActions = () => {
@@ -55,6 +67,8 @@ const MatchListActions = () => {
 const MatchActions = ({ record }: any) => {
     const navigate = useNavigate();
     const { permissions } = usePermissions();
+    const dataProvider = useDataProvider();
+    const notify = useNotify();
 
     const canEditMatches = ['football_chief', 'academy_admin', 'admin', 'super_admin'].includes(permissions);
     const canDeleteMatches = permissions === 'super_admin';
@@ -64,10 +78,21 @@ const MatchActions = ({ record }: any) => {
         navigate(`/match-participants?filter=${JSON.stringify({ matchId: record.matchId })}`);
     };
 
-    const handleUploadStats = (e: React.MouseEvent) => {
+    const handlePlayerNationUpload = (e: React.MouseEvent) => {
         e.preventDefault();
         e.stopPropagation();
-        navigate(`/stats-upload?matchId=${record.matchId}`);
+        navigate(`/playernation/upload?matchId=${record.matchId}`);
+    };
+
+    const handlePollNow = async (e: React.MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        try {
+            await dataProvider.custom(`admin/playernation/poll-now/${record.matchId}`, {});
+            notify('Poll initiated', { type: 'success' });
+        } catch (err) {
+            notify('Failed to initiate poll', { type: 'error' });
+        }
     };
 
     return (
@@ -82,15 +107,25 @@ const MatchActions = ({ record }: any) => {
                     Participants
                 </Button>
             )}
-            {canManageParticipants && (
+            {canManageParticipants && record.matchType === 'recorded' && !record.matchStatsId && (
                 <Button
                     size="small"
-                    startIcon={<UploadFileIcon />}
-                    onClick={handleUploadStats}
+                    startIcon={<VideoCallIcon />}
+                    onClick={handlePlayerNationUpload}
                     variant="outlined"
-                    color="secondary"
+                    color="primary"
                 >
-                    Upload Stats
+                    Stats
+                </Button>
+            )}
+            {canManageParticipants && record.matchStatsId && (
+                <Button
+                    size="small"
+                    startIcon={<RefreshIcon />}
+                    onClick={handlePollNow}
+                    variant="outlined"
+                >
+                    Re-poll
                 </Button>
             )}
             <ShowButton record={record} />
@@ -100,39 +135,52 @@ const MatchActions = ({ record }: any) => {
     );
 };
 
-const StatusField = ({ record }: any) => {
-    console.log('recorddd', record);
-
-    if (!record?.startTime) {
-        return null;
-    }
-    const now = new Date();
-    const matchDate = new Date(record.startTime);
-
-    let status = 'upcoming';
-    let color = 'primary';
-
-    if (matchDate < now) {
-        status = 'completed';
-        color = 'success';
-    } else if (matchDate.getTime() - now.getTime() < 24 * 60 * 60 * 1000) {
-        status = 'today';
-        color = 'warning';
-    }
-
-    return (
-        <Chip
-            label={status.charAt(0).toUpperCase() + status.slice(1)}
-            color={color as any}
-            size="small"
-        />
-    );
-};
 
 export const MatchList = () => {
+    const [tab, setTab] = useState(1); // 0: Past, 1: Current, 2: Upcoming
+
+    const { dateFrom, dateTo } = useMemo(() => {
+        const now = new Date();
+        const iso = (d: Date) => d.toISOString();
+
+        if (tab === 0) {
+            // Past: startTime < now - 24h → dateTo = now-24h
+            const to = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+            return { dateFrom: undefined as any, dateTo: iso(to) };
+        }
+
+        if (tab === 1) {
+            // Current: startOfToday - 24h ≤ startTime ≤ now
+            const startOfToday = new Date(now);
+            startOfToday.setHours(0, 0, 0, 0);
+            const from = new Date(startOfToday.getTime() - 24 * 60 * 60 * 1000);
+            return { dateFrom: iso(from), dateTo: iso(now) };
+        }
+
+        // Upcoming: startTime > now → dateFrom = now
+        return { dateFrom: iso(now), dateTo: undefined as any };
+    }, [tab]);
+
+    const listFilter = useMemo(() => {
+        const f: any = {};
+        if (dateFrom) f.dateFrom = dateFrom;
+        if (dateTo) f.dateTo = dateTo;
+        return f;
+    }, [dateFrom, dateTo]);
+
     return (
+        <>
+        <Box sx={{ px: 2, pt: 2 }}>
+            <Tabs value={tab} onChange={(_, v) => setTab(v)} aria-label="match buckets">
+                <Tab label="Past" />
+                <Tab label="Current" />
+                <Tab label="Upcoming" />
+            </Tabs>
+        </Box>
         <List
+            key={tab}
             filters={matchFilters}
+            filter={listFilter}
             actions={<MatchListActions />}
             perPage={25}
             sort={{ field: 'startTime', order: 'DESC' }}
@@ -140,6 +188,11 @@ export const MatchList = () => {
             <Datagrid rowClick={false}>
                 <TextField source="matchId" label="ID" />
                 <TextField source="matchType" label="Match Type" />
+                <NumberField source="playerCapacity" label="Player Capacity" />
+                <FunctionField
+                    label="Enrolled Participants"
+                    render={(record: any) => record.participantCount ?? 0}
+                />
                 <DateField source="startTime" label="Start Time" showTime />
                 <DateField source="endTime" label="End Time" showTime />
                 <BooleanField source="statsReceived" label="Stats Received" />
@@ -163,7 +216,23 @@ export const MatchList = () => {
                         record.venue?.city ? `${record.venue.city.cityName}, ${record.venue.city.stateName}` : '-'
                     }
                 />
-                <StatusField source="status" label="Status" />
+                <FunctionField
+                    label="Pricing"
+                    render={(record: any) => {
+                        if (record.slotPrice === 0 && record.offerPrice === 0) {
+                            return <Chip label="Free" color="success" size="small" />;
+                        }
+                        if (record.offerPrice < record.slotPrice) {
+                            return (
+                                <div>
+                                    <Chip label={`₹${record.offerPrice}`} color="error" size="small" />
+                                    <Chip label={`₹${record.slotPrice}`} color="default" size="small" style={{ textDecoration: 'line-through', marginLeft: 4 }} />
+                                </div>
+                            );
+                        }
+                        return <Chip label={`₹${record.slotPrice}`} color="primary" size="small" />;
+                    }}
+                />
                 <TextField source="matchHighlights" label="Highlights" />
                 <TextField source="matchRecap" label="Recap" />
                 <DateField source="createdAt" label="Created At" showTime />
@@ -174,5 +243,6 @@ export const MatchList = () => {
                 />
             </Datagrid>
         </List>
+        </>
     );
 };

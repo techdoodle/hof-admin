@@ -11,7 +11,7 @@ import { LoginPage } from './components/LoginPage';
 import { UserList, UserEdit, UserCreate, UserShow } from './resources/users';
 import { MatchList, MatchEdit, MatchCreate, MatchShow } from './resources/matches';
 import { MatchParticipantList, MatchParticipantCreate } from './resources/matchParticipants';
-import { StatsUpload } from './resources/statsUpload';
+import { PlayerNationUpload } from './resources/playernation';
 import { VenueList, VenueEdit, VenueCreate } from './resources/venues';
 import { MatchStatsEdit } from './resources/matchStats';
 
@@ -83,9 +83,9 @@ const App = () => (
       options={{ label: 'Participants' }}
     />
 
-    {/* Stats Upload - All admin roles */}
+    {/* PlayerNation Upload - All admin roles */}
     <CustomRoutes>
-      <Route path="/stats-upload" element={<StatsUpload />} />
+      <Route path="/playernation/upload" element={<PlayerNationUpload />} />
       <Route path="/match-stats/:matchId/edit" element={<MatchStatsEdit />} />
     </CustomRoutes>
 

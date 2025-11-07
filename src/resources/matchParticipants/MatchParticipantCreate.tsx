@@ -5,14 +5,18 @@ import {
   ReferenceInput,
   SelectInput,
   TextInput,
-  BooleanInput,
+  NumberInput,
   required,
 } from 'react-admin';
-import { useLocation, useSearchParams } from 'react-router-dom';
+import { useLocation, useSearchParams, useNavigate } from 'react-router-dom';
+import { Toolbar, SaveButton } from 'react-admin';
+import { Button } from '@mui/material';
+import { useGetOne } from 'react-admin';
 
 export const MatchParticipantCreate = () => {
   const location = useLocation();
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
 
   // Try to get matchId from multiple sources
   const matchId =
@@ -25,11 +29,41 @@ export const MatchParticipantCreate = () => {
     ...data,
     matchId: matchId || data.matchId, // Ensure matchId is always included
     userId: data.user, // Backend expects userId, not user
+    cashAmount: data.cashAmount || 0, // Ensure cashAmount is passed (defaults to 0)
   });
 
+  // Load match to derive team names
+  const numericMatchId = matchId ? parseInt(String(matchId), 10) : undefined;
+  const { data: matchDetails } = useGetOne('matches', {
+    id: numericMatchId as any,
+  }, { enabled: !!numericMatchId });
+
+  const teamChoices = React.useMemo(() => {
+    const a = matchDetails?.teamAName?.trim();
+    const b = matchDetails?.teamBName?.trim();
+    const unique = Array.from(new Set([a, b].filter(Boolean)));
+    return unique.map(name => ({ id: name!, name: name! }));
+  }, [matchDetails]);
+
+  const BackToolbar = () => (
+    <Toolbar>
+      <SaveButton alwaysEnable />
+      <Button
+        variant="outlined"
+        sx={{ ml: 1 }}
+        onClick={() => {
+          const f = encodeURIComponent(JSON.stringify({ matchId }));
+          navigate(`/match-participants?filter=${f}`);
+        }}
+      >
+        Back to Participants
+      </Button>
+    </Toolbar>
+  );
+
   return (
-    <Create redirect="list" transform={transform}>
-      <SimpleForm>
+    <Create redirect={false} transform={transform}>
+      <SimpleForm toolbar={<BackToolbar />}>
         <TextInput
           source="matchId"
           label="Match ID"
@@ -50,17 +84,25 @@ export const MatchParticipantCreate = () => {
           />
         </ReferenceInput>
 
-        <TextInput
+        <SelectInput
           source="teamName"
           label="Team Name"
+          choices={teamChoices}
+          optionText="name"
+          optionValue="id"
           validate={required()}
-          helperText="Enter the team name for this participant"
+          helperText={teamChoices.length ? 'Select a team' : 'Teams load from the match details'}
+          fullWidth
         />
 
-        <BooleanInput
-          source="paidStatsOptIn"
-          label="Paid Stats Opt-in"
-          defaultValue={false}
+        <NumberInput
+          source="cashAmount"
+          label="Cash Payment Amount (₹)"
+          min={0}
+          step={1}
+          defaultValue={0}
+          helperText="Enter the amount paid in cash for this participant"
+          fullWidth
         />
       </SimpleForm>
     </Create>

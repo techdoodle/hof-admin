@@ -50,44 +50,19 @@ export const MatchStatsEdit = () => {
 
     // Define which fields are editable (excluding readonly fields)
     const editableFields = [
+        // Keep teamName editable as a separate column
         'teamName',
-        'totalGoal',
-        'totalAssist',
-        'totalShot',
-        'totalOnTargetShot',
-        'totalOffTargetShot',
-        'totalPass',
-        'totalCompletePass',
-        'totalIncompletePass',
-        'totalThroughBall',
-        'totalCompleteThroughBall',
-        'totalIncompleteThroughBall',
-        'totalLongPass',
-        'totalCompleteLongPass',
-        'totalIncompleteLongPass',
-        'totalCross',
-        'totalCompleteCross',
-        'totalIncompleteCross',
-        'totalKeyPass',
-        'totalDribbleAttempt',
-        'totalSuccessfulDribble',
-        'totalUnsuccessfulDribble',
-        'totalDefensiveActions',
-        'totalTackles',
-        'totalInterceptions',
-        'totalClearance',
-        'totalSave',
-        'totalCatch',
-        'totalPunch',
-        'recovery',
-        'steal',
-        'totalMiscontrol',
-        'totalWoodwork',
-        'totalOwnGoals',
-        'teamBlackGoals',
-        'teamWhiteGoals',
-        'teamAGoals',
-        'teamBGoals',
+        // Compact 10 stats only
+        'totalGoal',              // Goals
+        'totalAssist',            // Assists
+        'totalShot',              // Shots
+        'totalPass',              // Total Passes
+        'totalPassingAccuracy',   // Passing Accuracy (0-1)
+        'totalKeyPass',           // Key Passes
+        'shotAccuracy',           // Shot Accuracy (0-1)
+        'totalTackles',           // Tackles
+        'totalInterceptions',     // Interceptions
+        'totalSave',              // Saves
     ];
 
     // Define field labels for better display
@@ -96,40 +71,13 @@ export const MatchStatsEdit = () => {
         totalGoal: 'Goals',
         totalAssist: 'Assists',
         totalShot: 'Total Shots',
-        totalOnTargetShot: 'Shots On Target',
-        totalOffTargetShot: 'Shots Off Target',
         totalPass: 'Total Passes',
-        totalCompletePass: 'Complete Passes',
-        totalIncompletePass: 'Incomplete Passes',
-        totalThroughBall: 'Through Balls',
-        totalCompleteThroughBall: 'Complete Through Balls',
-        totalIncompleteThroughBall: 'Incomplete Through Balls',
-        totalLongPass: 'Long Passes',
-        totalCompleteLongPass: 'Complete Long Passes',
-        totalIncompleteLongPass: 'Incomplete Long Passes',
-        totalCross: 'Crosses',
-        totalCompleteCross: 'Complete Crosses',
-        totalIncompleteCross: 'Incomplete Crosses',
+        totalPassingAccuracy: 'Passing Accuracy',
         totalKeyPass: 'Key Passes',
-        totalDribbleAttempt: 'Dribble Attempts',
-        totalSuccessfulDribble: 'Successful Dribbles',
-        totalUnsuccessfulDribble: 'Unsuccessful Dribbles',
-        totalDefensiveActions: 'Defensive Actions',
         totalTackles: 'Tackles',
         totalInterceptions: 'Interceptions',
-        totalClearance: 'Clearances',
         totalSave: 'Saves',
-        totalCatch: 'Catches',
-        totalPunch: 'Punches',
-        recovery: 'Recoveries',
-        steal: 'Steals',
-        totalMiscontrol: 'Miscontrols',
-        totalWoodwork: 'Woodwork',
-        totalOwnGoals: 'Own Goals',
-        teamBlackGoals: 'Team Black Goals',
-        teamWhiteGoals: 'Team White Goals',
-        teamAGoals: 'Team A Goals',
-        teamBGoals: 'Team B Goals',
+        shotAccuracy: 'Shot Accuracy',
     };
 
     useEffect(() => {
@@ -204,7 +152,7 @@ export const MatchStatsEdit = () => {
                     </Typography>
 
                     <Alert severity="info" sx={{ mt: 2 }}>
-                        No statistics found for this match. Upload statistics first.
+                        No statistics found for this match. Use the Stats upload to add match statistics.
                     </Alert>
 
                     <Box sx={{ mt: 3 }}>
@@ -212,15 +160,8 @@ export const MatchStatsEdit = () => {
                             variant="outlined"
                             startIcon={<ArrowBackIcon />}
                             onClick={handleBack}
-                            sx={{ mr: 2 }}
                         >
                             Back to Match
-                        </Button>
-                        <Button
-                            variant="contained"
-                            onClick={() => navigate(`/stats-upload?matchId=${matchId}`)}
-                        >
-                            Upload Statistics
                         </Button>
                     </Box>
                 </CardContent>
