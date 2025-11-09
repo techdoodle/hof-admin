@@ -130,7 +130,7 @@ const ParticipantsList = ({ matchId, onMatchChange }: { matchId: string; onMatch
       <List<MatchParticipant>
         resource="match-participants"
         filter={{ matchId }}
-        perPage={25}
+        pagination={false}
         sort={{ field: 'id', order: 'DESC' }}
         actions={false}
         storeKey={`match-participants-${matchId}`}
@@ -157,7 +157,7 @@ const ParticipantsList = ({ matchId, onMatchChange }: { matchId: string; onMatch
             bulkActionButtons={false}
             optimized
           >
-            <TextField source="id" label="ID" />
+            <TextField source="id" label="User ID" />
             <TextField source="teamName" label="Team" />
             <ReferenceField
               source="user"
@@ -168,7 +168,7 @@ const ParticipantsList = ({ matchId, onMatchChange }: { matchId: string; onMatch
             >
               <TextField source="firstName" />
             </ReferenceField>
-            
+
 
             {canManageParticipants && (
               <DeleteButton

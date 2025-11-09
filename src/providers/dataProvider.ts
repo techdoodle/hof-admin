@@ -7,13 +7,17 @@ export const dataProvider: DataProvider = {
     try {
       const { page, perPage } = params.pagination || { page: 1, perPage: 10 };
       const { field, order } = params.sort || { field: 'id', order: 'ASC' };
-      const query = {
+      const query: any = {
         ...params.filter,
-        limit: perPage,
-        offset: (page - 1) * perPage,
         sort: field,
         order: order.toLowerCase(),
       };
+
+      // Skip pagination for users and match-participants resources
+      if (resource !== 'match-participants') {
+        query.limit = perPage;
+        query.offset = (page - 1) * perPage;
+      }
 
       const url = `/admin/${resource}?${new URLSearchParams(query)}`;
       const response = await apiClient.get(url);
