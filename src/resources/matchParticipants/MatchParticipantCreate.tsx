@@ -3,6 +3,7 @@ import {
   Create,
   SimpleForm,
   ReferenceInput,
+  AutocompleteInput,
   SelectInput,
   TextInput,
   NumberInput,
@@ -12,6 +13,9 @@ import { useLocation, useSearchParams, useNavigate } from 'react-router-dom';
 import { Toolbar, SaveButton } from 'react-admin';
 import { Button } from '@mui/material';
 import { useGetOne } from 'react-admin';
+
+// Type assertion for AutocompleteInput to fix TypeScript issue
+const TypedAutocompleteInput = AutocompleteInput as any;
 
 export const MatchParticipantCreate = () => {
   const location = useLocation();
@@ -77,10 +81,18 @@ export const MatchParticipantCreate = () => {
           reference="users"
           label="Player"
         >
-          <SelectInput
-            optionText={record => `${record.firstName} ${record.lastName}`}
+          <TypedAutocompleteInput
+            optionText={(record: any): string => {
+              const name = `${record.firstName || ''} ${record.lastName || ''}`.trim();
+              return name ? `${name} (${record.phoneNumber || ''})` : record.phoneNumber || 'Unknown';
+            }}
             optionValue="id"
             validate={required()}
+            filterToQuery={(searchText: string) => ({ 
+              search: searchText 
+            })}
+            fullWidth
+            helperText="Start typing to search by name or phone number"
           />
         </ReferenceInput>
 

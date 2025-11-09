@@ -1,5 +1,5 @@
 import React from 'react';
-import { Layout as RALayout, AppBar, Menu, UserMenu } from 'react-admin';
+import { Layout as RALayout, AppBar, Menu, UserMenu, usePermissions } from 'react-admin';
 import { Box, Chip, Link } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { getCurrentEnvironment } from '../config/environment';
@@ -40,14 +40,19 @@ const CustomAppBar = () => {
   );
 };
 
-const CustomMenu = () => (
-  <Menu>
-    <Menu.ResourceItem name="users" />
-    <Menu.ResourceItem name="matches" />
-    <Menu.ResourceItem name="match-participants" />
-    <Menu.ResourceItem name="venues" />
-  </Menu>
-);
+const CustomMenu = () => {
+  const { permissions } = usePermissions();
+  const canViewUsers = ['admin', 'super_admin'].includes(permissions as string);
+  
+  return (
+    <Menu>
+      {canViewUsers && <Menu.ResourceItem name="users" />}
+      <Menu.ResourceItem name="matches" />
+      <Menu.ResourceItem name="match-participants" />
+      <Menu.ResourceItem name="venues" />
+    </Menu>
+  );
+};
 
 export const Layout = (props: any) => (
   <RALayout

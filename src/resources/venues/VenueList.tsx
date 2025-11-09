@@ -4,6 +4,7 @@ import {
     Datagrid,
     TextField,
     EditButton,
+    ShowButton,
     DeleteButton,
     SearchInput,
     FunctionField,
@@ -28,9 +29,9 @@ const VenueListActions = () => {
             <Button
                 color="primary"
                 startIcon={<UploadFileIcon />}
-                onClick={() => navigate('/venues/upload-excel')}
+                onClick={() => navigate('/venues/upload-csv')}
             >
-                Upload Excel
+                Upload CSV
             </Button>
             <ExportButton />
         </TopToolbar>
@@ -75,6 +76,7 @@ export const VenueList = () => {
                         return costs || '-';
                     }}
                 />
+                <ShowButton />
                 <EditButton />
                 <DeleteButton />
             </Datagrid>
