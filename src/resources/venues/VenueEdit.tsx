@@ -157,11 +157,9 @@ export const VenueEdit = () => {
             }
         });
 
-        // Remove latitude and longitude from data - backend will extract from googleMapsUrl
-        const { latitude, longitude, ...restData } = data;
-
+        // Keep latitude and longitude in data
         return {
-            ...restData,
+            ...data,
             cityId: data.cityId?.id || data.cityId,
             venueFormats: venueFormats.length > 0 ? venueFormats : [],
         };
@@ -210,38 +208,29 @@ export const VenueEdit = () => {
                             fullWidth
                         />
                     </Box>
-                    <Box flex="1 1 100%">
+                    {/* Google Maps URL input commented out - using latitude/longitude instead */}
+                    {/* <Box flex="1 1 100%">
                         <GoogleMapsUrlInput
                             source="googleMapsUrl"
                             label="Google Maps URL"
                             placeholder="https://www.google.com/maps/place/..."
                             fullWidth
                         />
+                    </Box> */}
+                    <Box flex="1 1 300px">
+                        <NumberInput
+                            source="latitude"
+                            label="Latitude"
+                            fullWidth
+                        />
                     </Box>
-                    {record?.latitude != null && record?.longitude != null && (
-                        <>
-                            <Box flex="1 1 300px">
-                                <TextInput
-                                    source="latitude"
-                                    label="Latitude (read-only)"
-                                    InputProps={{ readOnly: true }}
-                                    fullWidth
-                                    disabled
-                                    defaultValue={record.latitude}
-                                />
-                            </Box>
-                            <Box flex="1 1 300px">
-                                <TextInput
-                                    source="longitude"
-                                    label="Longitude (read-only)"
-                                    InputProps={{ readOnly: true }}
-                                    fullWidth
-                                    disabled
-                                    defaultValue={record.longitude}
-                                />
-                            </Box>
-                        </>
-                    )}
+                    <Box flex="1 1 300px">
+                        <NumberInput
+                            source="longitude"
+                            label="Longitude"
+                            fullWidth
+                        />
+                    </Box>
                 </Box>
 
                 <Divider sx={{ my: 3 }} />
