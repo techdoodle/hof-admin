@@ -99,7 +99,6 @@ const parseGoogleMapsUrl = (input: string): { latitude: number; longitude: numbe
 const GoogleMapsUrlInput = ({ source, ...props }: { source: string; [key: string]: any }) => {
     const {
         field,
-        fieldState: { error },
     } = useInput({ source, ...props });
 
     const extractedCoords = useMemo(() => {

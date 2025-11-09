@@ -2,8 +2,6 @@ import React from 'react';
 import {
   Show,
   SimpleShowLayout,
-  TextField,
-  NumberField,
   FunctionField,
   useRecordContext,
   TopToolbar,

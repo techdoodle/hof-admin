@@ -4,7 +4,6 @@ import {
   List,
   Datagrid,
   TextField,
-  ReferenceField,
   FunctionField,
   DeleteButton,
   usePermissions,
