@@ -4,7 +4,7 @@ import {
   List,
   Datagrid,
   TextField,
-  ReferenceField,
+  FunctionField,
   DeleteButton,
   usePermissions,
   TopToolbar,
@@ -14,9 +14,10 @@ import {
   useGetList,
   Form,
   RaRecord,
+  useListContext,
 } from 'react-admin';
 import { useQueryClient } from '@tanstack/react-query';
-import { Card, CardContent, Typography, Box, Button, Divider } from '@mui/material';
+import { Card, CardContent, Typography, Box, Button, Divider, Chip } from '@mui/material';
 
 type AdminRole = 'football_chief' | 'academy_admin' | 'admin' | 'super_admin';
 const ADMIN_ROLES: AdminRole[] = ['football_chief', 'academy_admin', 'admin', 'super_admin'];
@@ -36,7 +37,22 @@ interface MatchParticipant extends RaRecord {
   user: string;
   paidStatsOptIn: boolean;
   matchId: string;
+  paymentType?: string;
 }
+
+// Serial Number Field Component
+const SerialNumberField = ({ label }: { label: string }) => {
+  const { data } = useListContext();
+  return (
+    <FunctionField
+      label={label}
+      render={(record: MatchParticipant) => {
+        const index = data?.findIndex((item: MatchParticipant) => item.id === record.id) ?? -1;
+        return index >= 0 ? index + 1 : '-';
+      }}
+    />
+  );
+};
 
 const MatchSelector = ({ onMatchSelect }: MatchSelectorProps) => {
   const { data, isLoading } = useGetList<Match>('matches', {
@@ -157,19 +173,41 @@ const ParticipantsList = ({ matchId, onMatchChange }: { matchId: string; onMatch
             bulkActionButtons={false}
             optimized
           >
-            <TextField source="id" label="User ID" />
+            <SerialNumberField label="S.No" />
             <TextField source="teamName" label="Team" />
-            <ReferenceField
-              source="user"
-              reference="users"
+            <FunctionField
               label="Player"
-              emptyText="-"
-              link={false}
-            >
-              <TextField source="firstName" />
-            </ReferenceField>
-
-
+              render={(record: MatchParticipant) => {
+                const userData = (record as any).userData;
+                if (userData) {
+                  const fullName = [userData.firstName, userData.lastName].filter(Boolean).join(' ') || userData.phoneNumber || '-';
+                  return fullName;
+                }
+                return '-';
+              }}
+            />
+            <FunctionField
+              label="Payment Type"
+              render={(record: MatchParticipant) => {
+                const paymentType = (record as any).paymentType || 'N/A';
+                let chipColor: 'warning' | 'success' | 'default' = 'default';
+                let chipLabel = paymentType;
+                
+                if (paymentType === 'Cash') {
+                  chipColor = 'warning';
+                } else if (paymentType === 'Online/Razorpay') {
+                  chipColor = 'success';
+                }
+                
+                return (
+                  <Chip 
+                    label={chipLabel} 
+                    color={chipColor}
+                    size="small"
+                  />
+                );
+              }}
+            />
             {canManageParticipants && (
               <DeleteButton
                 mutationMode="pessimistic"

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
     Edit,
     SimpleForm,
@@ -7,56 +7,130 @@ import {
     ReferenceInput,
     SelectInput,
     required,
-    useInput,
-    useGetList,
 } from 'react-admin';
 import { Box, Typography, Divider } from '@mui/material';
 import { ImagePreviewInput } from '../../components/ImagePreviewInput';
 
-const CityInput = ({ onChange: parentOnChange, source, ...props }: { onChange: (coords: { latitude: number; longitude: number }) => void; source: string; }) => {
-    const {
-        field
-    } = useInput({ source, ...props });
+// Google Maps URL parser and input component commented out - using latitude/longitude inputs instead
+// Client-side Google Maps URL parser for preview
+// const parseGoogleMapsUrl = (input: string): { latitude: number; longitude: number } | null => {
+//     if (!input || typeof input !== 'string') {
+//         return null;
+//     }
 
-    const { data: cities } = useGetList('cities');
+//     const trimmed = input.trim();
+//     if (!trimmed) {
+//         return null;
+//     }
 
-    const handleChange = (choice: any) => {
-        // Call the original onChange
-        field.onChange(choice);
+//     // Try to parse direct lat,lng format first (e.g., "28.6139,77.2090")
+//     const directMatch = trimmed.match(/^(-?\d+\.?\d*),(-?\d+\.?\d*)$/);
+//     if (directMatch) {
+//         const lat = parseFloat(directMatch[1]);
+//         const lng = parseFloat(directMatch[2]);
+//         if (!isNaN(lat) && !isNaN(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
+//             return { latitude: lat, longitude: lng };
+//         }
+//     }
 
-        // Get selected city ID from event
-        const cityId = choice?.target?.value;
-        if (!cityId) return;
+//     // Check if it's a URL
+//     if (!trimmed.startsWith('http://') && !trimmed.startsWith('https://')) {
+//         return null;
+//     }
 
-        // Get city data from the choice object
-        const selectedOption = cities?.find((c: any) => c.id === Number(cityId));
-        if (selectedOption?.latitude && selectedOption?.longitude) {
-            parentOnChange({
-                latitude: Number(selectedOption.latitude),
-                longitude: Number(selectedOption.longitude)
-            });
-        }
-    };
+//     try {
+//         const url = new URL(trimmed);
 
-    return (
-        <SelectInput
-            {...props}
-            {...field}
-            onChange={handleChange}
-            optionText={(record) => `${record.cityName}, ${record.stateName}`}
-            validate={required()}
-            fullWidth
-        />
-    );
-};
+//         // Format 1: https://www.google.com/maps?q=lat,lng
+//         const qParam = url.searchParams.get('q');
+//         if (qParam) {
+//             const match = qParam.match(/(-?\d+\.?\d*)\s*,\s*(-?\d+\.?\d*)/);
+//             if (match) {
+//                 const lat = parseFloat(match[1]);
+//                 const lng = parseFloat(match[2]);
+//                 if (!isNaN(lat) && !isNaN(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
+//                     return { latitude: lat, longitude: lng };
+//                 }
+//             }
+//         }
+
+//         // Format 2 & 3: https://www.google.com/maps/@lat,lng,zoom or /place/.../@lat,lng,zoom
+//         const pathMatch = url.pathname.match(/\/@(-?\d+\.?\d*),(-?\d+\.?\d*)/);
+//         if (pathMatch) {
+//             const lat = parseFloat(pathMatch[1]);
+//             const lng = parseFloat(pathMatch[2]);
+//             if (!isNaN(lat) && !isNaN(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
+//                 return { latitude: lat, longitude: lng };
+//             }
+//         }
+
+//         // Format 4: https://www.google.com/maps/search/?api=1&query=lat,lng
+//         const queryParam = url.searchParams.get('query');
+//         if (queryParam) {
+//             const match = queryParam.match(/(-?\d+\.?\d*)\s*,\s*(-?\d+\.?\d*)/);
+//             if (match) {
+//                 const lat = parseFloat(match[1]);
+//                 const lng = parseFloat(match[2]);
+//                 if (!isNaN(lat) && !isNaN(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
+//                     return { latitude: lat, longitude: lng };
+//                 }
+//             }
+//         }
+
+//         // Format 5: Check for coordinates in the hash fragment
+//         if (url.hash) {
+//             const hashMatch = url.hash.match(/(-?\d+\.?\d*),(-?\d+\.?\d*)/);
+//             if (hashMatch) {
+//                 const lat = parseFloat(hashMatch[1]);
+//                 const lng = parseFloat(hashMatch[2]);
+//                 if (!isNaN(lat) && !isNaN(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
+//                     return { latitude: lat, longitude: lng };
+//                 }
+//             }
+//         }
+//     } catch (error) {
+//         // Invalid URL format
+//         return null;
+//     }
+
+//     return null;
+// };
+
+// const GoogleMapsUrlInput = ({ source, ...props }: { source: string; [key: string]: any }) => {
+//     const {
+//         field,
+//     } = useInput({ source, ...props });
+//     const record = useRecordContext();
+
+//     const extractedCoords = useMemo(() => {
+//         if (field.value) {
+//             return parseGoogleMapsUrl(field.value);
+//         }
+//         return null;
+//     }, [field.value]);
+
+//     // Show existing coordinates if venue has them but no URL
+//     const existingCoords = record?.latitude != null && record?.longitude != null && !field.value;
+
+//     return (
+//         <Box>
+//             <TextInput
+//                 {...props}
+//                 source={source}
+//                 fullWidth
+//                 helperText={
+//                     extractedCoords
+//                         ? `Coordinates will be auto-extracted: ${extractedCoords.latitude.toFixed(6)}, ${extractedCoords.longitude.toFixed(6)}`
+//                         : existingCoords
+//                         ? `Current coordinates: ${record.latitude.toFixed(6)}, ${record.longitude.toFixed(6)} (read-only)`
+//                         : props.helperText || 'Enter a Google Maps URL. Coordinates will be automatically extracted.'
+//                 }
+//             />
+//         </Box>
+//     );
+// };
 
 export const VenueEdit = () => {
-    const [coordinates, setCoordinates] = useState<{ latitude: number | null; longitude: number | null }>({ latitude: null, longitude: null });
-
-    const handleCityChange = ({ latitude, longitude }: { latitude: number; longitude: number }) => {
-        setCoordinates({ latitude, longitude });
-    };
-
     // Transform data: convert venueFormats array to individual cost fields
     const transform = (data: any) => {
         const venueFormats: any[] = [];
@@ -80,6 +154,7 @@ export const VenueEdit = () => {
             }
         });
 
+        // Keep latitude and longitude in data
         return {
             ...data,
             cityId: data.cityId?.id || data.cityId,
@@ -112,7 +187,12 @@ export const VenueEdit = () => {
                     </Box>
                     <Box flex="1 1 300px">
                         <ReferenceInput source="city" reference="cities">
-                            <CityInput source="city" onChange={handleCityChange} />
+                            <SelectInput
+                                source="city"
+                                optionText={(record) => `${record.cityName}, ${record.stateName}`}
+                                validate={required()}
+                                fullWidth
+                            />
                         </ReferenceInput>
                     </Box>
                     <Box flex="1 1 100%">
@@ -125,22 +205,27 @@ export const VenueEdit = () => {
                             fullWidth
                         />
                     </Box>
+                    {/* Google Maps URL input commented out - using latitude/longitude instead */}
+                    {/* <Box flex="1 1 100%">
+                        <GoogleMapsUrlInput
+                            source="googleMapsUrl"
+                            label="Google Maps URL"
+                            placeholder="https://www.google.com/maps/place/..."
+                            fullWidth
+                        />
+                    </Box> */}
                     <Box flex="1 1 300px">
-                        <TextInput
+                        <NumberInput
                             source="latitude"
                             label="Latitude"
-                            type="number"
                             fullWidth
-                            defaultValue={coordinates.latitude}
                         />
                     </Box>
                     <Box flex="1 1 300px">
-                        <TextInput
+                        <NumberInput
                             source="longitude"
                             label="Longitude"
-                            type="number"
                             fullWidth
-                            defaultValue={coordinates.longitude}
                         />
                     </Box>
                 </Box>

@@ -19,7 +19,15 @@ export const dataProvider: DataProvider = {
         query.offset = (page - 1) * perPage;
       }
 
-      const url = `/admin/${resource}?${new URLSearchParams(query)}`;
+      // Build URL with query parameters, handling undefined/null values
+      const queryParams = new URLSearchParams();
+      Object.keys(query).forEach(key => {
+        if (query[key] !== undefined && query[key] !== null) {
+          queryParams.append(key, String(query[key]));
+        }
+      });
+
+      const url = `/admin/${resource}?${queryParams.toString()}`;
       const response = await apiClient.get(url);
 
       console.log('DataProvider getList response:', response.data);
