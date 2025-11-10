@@ -61,7 +61,11 @@ const CoordinatesField = () => {
   const latitude = record?.latitude;
   const longitude = record?.longitude;
 
-  if (latitude == null || longitude == null) {
+  // Convert to numbers if they're strings
+  const latNum = latitude != null ? Number(latitude) : null;
+  const lngNum = longitude != null ? Number(longitude) : null;
+
+  if (latNum == null || lngNum == null || isNaN(latNum) || isNaN(lngNum)) {
     return (
       <Box>
         <Typography variant="caption" color="textSecondary" display="block">
@@ -74,7 +78,7 @@ const CoordinatesField = () => {
     );
   }
 
-  const googleMapsUrl = `https://www.google.com/maps?q=${latitude},${longitude}`;
+  const googleMapsUrl = `https://www.google.com/maps?q=${latNum},${lngNum}`;
 
   return (
     <Box>
@@ -83,7 +87,7 @@ const CoordinatesField = () => {
       </Typography>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
         <Typography variant="body1">
-          {latitude.toFixed(6)}, {longitude.toFixed(6)}
+          {latNum.toFixed(6)}, {lngNum.toFixed(6)}
         </Typography>
         <Chip
           icon={<LocationOnIcon />}

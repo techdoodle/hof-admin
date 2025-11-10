@@ -186,9 +186,9 @@ export const VenueEdit = () => {
                         />
                     </Box>
                     <Box flex="1 1 300px">
-                        <ReferenceInput source="city" reference="cities">
+                        <ReferenceInput source="cityId" reference="cities">
                             <SelectInput
-                                source="city"
+                                source="cityId"
                                 optionText={(record) => `${record.cityName}, ${record.stateName}`}
                                 validate={required()}
                                 fullWidth
@@ -205,26 +205,26 @@ export const VenueEdit = () => {
                             fullWidth
                         />
                     </Box>
-                    {/* Google Maps URL input commented out - using latitude/longitude instead */}
-                    {/* <Box flex="1 1 100%">
-                        <GoogleMapsUrlInput
+                    <Box flex="1 1 100%">
+                        <TextInput
                             source="googleMapsUrl"
                             label="Google Maps URL"
                             placeholder="https://www.google.com/maps/place/..."
                             fullWidth
+                            helperText="On submit, coordinates will be extracted from this URL if provided."
                         />
-                    </Box> */}
+                    </Box>
                     <Box flex="1 1 300px">
                         <NumberInput
                             source="latitude"
-                            label="Latitude"
+                            label="Latitude (optional)"
                             fullWidth
                         />
                     </Box>
                     <Box flex="1 1 300px">
                         <NumberInput
                             source="longitude"
-                            label="Longitude"
+                            label="Longitude (optional)"
                             fullWidth
                         />
                     </Box>

@@ -198,29 +198,27 @@ export const VenueCreate = () => {
                             fullWidth
                         />
                     </Box>
-                    {/* Google Maps URL input commented out - using latitude/longitude instead */}
-                    {/* <Box flex="1 1 100%">
-                        <GoogleMapsUrlInput
+                    <Box flex="1 1 100%">
+                        <TextInput
                             source="googleMapsUrl"
                             label="Google Maps URL"
                             placeholder="https://www.google.com/maps/place/..."
                             fullWidth
+                            helperText="On submit, coordinates will be extracted from this URL if provided."
                         />
-                    </Box> */}
+                    </Box>
                     <Box flex="1 1 300px">
                         <NumberInput
                             source="latitude"
-                            label="Latitude"
+                            label="Latitude (optional)"
                             fullWidth
-                            validate={required()}
                         />
                     </Box>
                     <Box flex="1 1 300px">
                         <NumberInput
                             source="longitude"
-                            label="Longitude"
+                            label="Longitude (optional)"
                             fullWidth
-                            validate={required()}
                         />
                     </Box>
                 </Box>
