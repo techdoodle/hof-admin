@@ -154,7 +154,7 @@ export const MatchEdit = () => {
           </Box>
           <Box flex="1 1 300px">
             <NumberInput
-              source="player_capacity"
+              source="playerCapacity"
               label="Player Capacity"
               min={0}
               fullWidth
@@ -162,7 +162,7 @@ export const MatchEdit = () => {
           </Box>
           <Box flex="1 1 300px">
             <NumberInput
-              source="buffer_capacity"
+              source="bufferCapacity"
               label="Buffer Capacity"
               min={0}
               defaultValue={0}
