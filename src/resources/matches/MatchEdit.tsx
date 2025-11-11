@@ -12,11 +12,15 @@ import {
   TopToolbar,
   CreateButton,
   useInput,
+  ListButton,
+  ShowButton,
 } from 'react-admin';
 import { Box, Typography } from '@mui/material';
 
 const MatchEditToolbar = () => (
   <TopToolbar>
+    <ListButton />
+    <ShowButton />
     <CreateButton
       resource="venues"
       label="Add New Venue"
@@ -68,7 +72,7 @@ const PricingFields = () => {
 export const MatchEdit = () => {
   // No need for transform as we're using direct IDs
   return (
-    <Edit actions={<MatchEditToolbar />}>
+    <Edit actions={<MatchEditToolbar />} mutationMode="pessimistic">
       <SimpleForm>
         <Typography variant="h6" gutterBottom>
           Match Details

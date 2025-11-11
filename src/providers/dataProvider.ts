@@ -172,6 +172,9 @@ export const dataProvider: DataProvider = {
         const response = await apiClient.get(`/${resource}/${params.id}`);
         const participant = response.data;
         url = `/admin/matches/${participant.match.matchId}/participants/${participant.user.id}`;
+      } else if (resource === 'matches') {
+        // Matches should use the cancel endpoint, not delete
+        throw new Error('Match deletion is not allowed. Use the cancel match feature instead.');
       } else {
         url = `/admin/${resource}/${params.id}`;
       }

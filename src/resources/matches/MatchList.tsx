@@ -8,7 +8,6 @@ import {
     BooleanField,
     EditButton,
     ShowButton,
-    DeleteButton,
     SearchInput,
     DateInput,
     usePermissions,
@@ -25,7 +24,9 @@ import { useNavigate } from 'react-router-dom';
 import GroupIcon from '@mui/icons-material/Group';
 import VideoCallIcon from '@mui/icons-material/VideoCall';
 import RefreshIcon from '@mui/icons-material/Refresh';
+import CancelIcon from '@mui/icons-material/Cancel';
 import { useDataProvider, useNotify } from 'react-admin';
+import { MatchCancelDialog } from './MatchCancelDialog';
 
 const matchFilters = [
     <SearchInput source="search" placeholder="Search matches..." alwaysOn />,
@@ -69,9 +70,10 @@ const MatchActions = ({ record }: any) => {
     const { permissions } = usePermissions();
     const dataProvider = useDataProvider();
     const notify = useNotify();
+    const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
 
     const canEditMatches = ['football_chief', 'academy_admin', 'admin', 'super_admin'].includes(permissions);
-    const canDeleteMatches = permissions === 'super_admin';
+    const canCancelMatches = permissions === 'super_admin';
     const canManageParticipants = ['football_chief', 'academy_admin', 'admin', 'super_admin'].includes(permissions);
 
     const handleParticipants = () => {
@@ -130,7 +132,33 @@ const MatchActions = ({ record }: any) => {
             )}
             <ShowButton record={record} />
             {canEditMatches && <EditButton record={record} />}
-            {canDeleteMatches && <DeleteButton record={record} />}
+            {canCancelMatches && record.status !== 'CANCELLED' && (
+                <Button
+                    size="small"
+                    startIcon={<CancelIcon />}
+                    onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setCancelDialogOpen(true);
+                    }}
+                    variant="outlined"
+                    color="error"
+                >
+                    Cancel Match
+                </Button>
+            )}
+            {canCancelMatches && record.status === 'CANCELLED' && (
+                <Chip label="Cancelled" color="error" size="small" />
+            )}
+            <MatchCancelDialog
+                open={cancelDialogOpen}
+                matchId={record.matchId}
+                onClose={() => setCancelDialogOpen(false)}
+                onConfirm={() => {
+                    setCancelDialogOpen(false);
+                    window.location.reload(); // Refresh the page to show updated match status
+                }}
+            />
         </div>
     );
 };
@@ -185,8 +213,17 @@ export const MatchList = () => {
             perPage={25}
             sort={{ field: 'startTime', order: 'DESC' }}
         >
-            <Datagrid rowClick={false}>
+            <Datagrid rowClick={false} bulkActionButtons={false}>
                 <TextField source="matchId" label="ID" />
+                <FunctionField
+                    label="Status"
+                    render={(record: any) => {
+                        if (record.status === 'CANCELLED') {
+                            return <Chip label="Cancelled" color="error" size="small" />;
+                        }
+                        return <Chip label="Active" color="success" size="small" />;
+                    }}
+                />
                 <TextField source="matchType" label="Match Type" />
                 <NumberField source="playerCapacity" label="Player Capacity" />
                 <FunctionField
