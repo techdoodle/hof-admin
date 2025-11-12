@@ -170,11 +170,10 @@ export const MatchCreate = () => {
           <Box flex="1 1 300px">
             <ReferenceInput
               source="footballChief"
-              reference="users"
-              filter={{ role: 'football_chief,academy_admin,admin,super_admin' }}
+              reference="chiefs"
             >
               <SelectInput
-                optionText={(record) => `${record.firstName} ${record.lastName}`}
+                optionText="fullName"
                 validate={required()}
                 fullWidth
               />
