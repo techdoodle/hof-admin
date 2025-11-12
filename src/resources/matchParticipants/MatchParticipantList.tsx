@@ -15,9 +15,13 @@ import {
   Form,
   RaRecord,
   useListContext,
+  useNotify,
+  useDataProvider,
 } from 'react-admin';
 import { useQueryClient } from '@tanstack/react-query';
-import { Card, CardContent, Typography, Box, Button, Divider, Chip } from '@mui/material';
+import { Card, CardContent, Typography, Box, Button, Divider, Chip, IconButton } from '@mui/material';
+import StarIcon from '@mui/icons-material/Star';
+import StarBorderIcon from '@mui/icons-material/StarBorder';
 
 type AdminRole = 'football_chief' | 'academy_admin' | 'admin' | 'super_admin';
 const ADMIN_ROLES: AdminRole[] = ['football_chief', 'academy_admin', 'admin', 'super_admin'];
@@ -38,6 +42,7 @@ interface MatchParticipant extends RaRecord {
   paidStatsOptIn: boolean;
   matchId: string;
   paymentType?: string;
+  isMvp?: boolean;
 }
 
 // Serial Number Field Component
@@ -106,6 +111,9 @@ const MatchSelector = ({ onMatchSelect }: MatchSelectorProps) => {
 const ParticipantsList = ({ matchId, onMatchChange }: { matchId: string; onMatchChange: (id: string | null) => void }) => {
   const { permissions } = usePermissions<AdminRole>();
   const canManageParticipants = permissions ? ADMIN_ROLES.includes(permissions) : false;
+  const notify = useNotify();
+  const dataProvider = useDataProvider();
+  const queryClient = useQueryClient();
   const { data: matches, isLoading } = useGetList<Match>('matches', {
     pagination: { page: 1, perPage: 100 },
     sort: { field: 'startTime', order: 'DESC' }
@@ -117,6 +125,20 @@ const ParticipantsList = ({ matchId, onMatchChange }: { matchId: string; onMatch
       onMatchChange(value);
     }
   }, [matchId, onMatchChange]);
+
+  const handleSetMvp = React.useCallback(async (userId: number) => {
+    try {
+      await dataProvider.custom(`admin/matches/${matchId}/mvp`, {
+        method: 'PATCH',
+        data: { userId }
+      });
+      notify('MVP assigned successfully', { type: 'success' });
+      // Refresh the participant list
+      queryClient.invalidateQueries({ queryKey: ['match-participants'] });
+    } catch (error: any) {
+      notify(error?.message || 'Failed to assign MVP', { type: 'error' });
+    }
+  }, [matchId, dataProvider, notify, queryClient]);
 
   return (
     <>
@@ -187,6 +209,22 @@ const ParticipantsList = ({ matchId, onMatchChange }: { matchId: string; onMatch
               }}
             />
             <FunctionField
+              label="MVP"
+              render={(record: MatchParticipant) => {
+                const isMvp = record.isMvp || false;
+                return isMvp ? (
+                  <Chip 
+                    label="MVP" 
+                    color="primary"
+                    size="small"
+                    icon={<StarIcon />}
+                  />
+                ) : (
+                  <Typography variant="body2" color="textSecondary">-</Typography>
+                );
+              }}
+            />
+            <FunctionField
               label="Payment Type"
               render={(record: MatchParticipant) => {
                 const paymentType = (record as any).paymentType || 'N/A';
@@ -208,6 +246,30 @@ const ParticipantsList = ({ matchId, onMatchChange }: { matchId: string; onMatch
                 );
               }}
             />
+            {canManageParticipants && (
+              <FunctionField
+                label="Set MVP"
+                render={(record: MatchParticipant) => {
+                  const userData = (record as any).userData;
+                  const userId = userData?.id;
+                  const isMvp = record.isMvp || false;
+                  
+                  if (!userId) return null;
+                  
+                  return (
+                    <IconButton
+                      size="small"
+                      color={isMvp ? 'primary' : 'default'}
+                      onClick={() => handleSetMvp(userId)}
+                      disabled={isMvp}
+                      title={isMvp ? 'Already MVP' : 'Set as MVP'}
+                    >
+                      {isMvp ? <StarIcon /> : <StarBorderIcon />}
+                    </IconButton>
+                  );
+                }}
+              />
+            )}
             {canManageParticipants && (
               <DeleteButton
                 mutationMode="pessimistic"
