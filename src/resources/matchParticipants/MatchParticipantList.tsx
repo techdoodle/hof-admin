@@ -5,7 +5,6 @@ import {
   Datagrid,
   TextField,
   FunctionField,
-  DeleteButton,
   usePermissions,
   TopToolbar,
   CreateButton,
@@ -22,6 +21,8 @@ import { useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, Typography, Box, Button, Divider, Chip, IconButton } from '@mui/material';
 import StarIcon from '@mui/icons-material/Star';
 import StarBorderIcon from '@mui/icons-material/StarBorder';
+import DeleteIcon from '@mui/icons-material/Delete';
+import { ParticipantRemoveDialog } from './ParticipantRemoveDialog';
 
 type AdminRole = 'football_chief' | 'academy_admin' | 'admin' | 'super_admin';
 const ADMIN_ROLES: AdminRole[] = ['football_chief', 'academy_admin', 'admin', 'super_admin'];
@@ -114,6 +115,8 @@ const ParticipantsList = ({ matchId, onMatchChange }: { matchId: string; onMatch
   const notify = useNotify();
   const dataProvider = useDataProvider();
   const queryClient = useQueryClient();
+  const [removeDialogOpen, setRemoveDialogOpen] = useState(false);
+  const [selectedParticipant, setSelectedParticipant] = useState<MatchParticipant | null>(null);
   const { data: matches, isLoading } = useGetList<Match>('matches', {
     pagination: { page: 1, perPage: 100 },
     sort: { field: 'startTime', order: 'DESC' }
@@ -139,6 +142,40 @@ const ParticipantsList = ({ matchId, onMatchChange }: { matchId: string; onMatch
       notify(error?.message || 'Failed to assign MVP', { type: 'error' });
     }
   }, [matchId, dataProvider, notify, queryClient]);
+
+  const handleRemoveClick = React.useCallback((record: MatchParticipant) => {
+    setSelectedParticipant(record);
+    setRemoveDialogOpen(true);
+  }, []);
+
+  const handleRemoveConfirm = React.useCallback(async (shouldRefund: boolean) => {
+    if (!selectedParticipant) return;
+
+    const userData = (selectedParticipant as any).userData;
+    const userId = userData?.id;
+
+    if (!userId) {
+      notify('Cannot remove participant: User ID not found', { type: 'error' });
+      return;
+    }
+
+    try {
+      // Use custom endpoint to pass shouldRefund parameter
+      await dataProvider.custom(
+        `admin/matches/${matchId}/participants/${userId}`,
+        {
+          method: 'DELETE',
+          data: { shouldRefund }
+        }
+      );
+      notify('Participant removed successfully', { type: 'success' });
+      queryClient.invalidateQueries({ queryKey: ['match-participants'] });
+      setRemoveDialogOpen(false);
+      setSelectedParticipant(null);
+    } catch (error: any) {
+      notify(error?.message || 'Failed to remove participant', { type: 'error' });
+    }
+  }, [selectedParticipant, matchId, dataProvider, notify, queryClient]);
 
   return (
     <>
@@ -271,15 +308,44 @@ const ParticipantsList = ({ matchId, onMatchChange }: { matchId: string; onMatch
               />
             )}
             {canManageParticipants && (
-              <DeleteButton
-                mutationMode="pessimistic"
-                confirmTitle="Delete participant?"
-                confirmContent="Are you sure you want to delete this participant?"
+              <FunctionField
+                label="Actions"
+                render={(record: MatchParticipant) => {
+                  return (
+                    <IconButton
+                      size="small"
+                      color="error"
+                      onClick={() => handleRemoveClick(record)}
+                      title="Remove participant"
+                    >
+                      <DeleteIcon />
+                    </IconButton>
+                  );
+                }}
               />
             )}
           </Datagrid>
         </div>
       </List>
+      {selectedParticipant && (
+        <ParticipantRemoveDialog
+          open={removeDialogOpen}
+          onClose={() => {
+            setRemoveDialogOpen(false);
+            setSelectedParticipant(null);
+          }}
+          onConfirm={handleRemoveConfirm}
+          participantName={
+            selectedParticipant.userData
+              ? [selectedParticipant.userData.firstName, selectedParticipant.userData.lastName]
+                  .filter(Boolean)
+                  .join(' ') || selectedParticipant.userData.phoneNumber
+              : undefined
+          }
+          paymentType={(selectedParticipant as any).paymentType}
+          isOnlinePayment={(selectedParticipant as any).paymentType === 'Online/Razorpay'}
+        />
+      )}
     </>
   );
 };
