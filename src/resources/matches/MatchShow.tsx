@@ -9,6 +9,9 @@ import {
   FunctionField,
   useRecordContext,
   Button,
+  TopToolbar,
+  ListButton,
+  EditButton,
 } from 'react-admin';
 import { Typography, Box } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
@@ -20,6 +23,13 @@ const MatchTitle = () => {
   const record = useRecordContext();
   return <span>Match {record ? `#${record.matchId}` : ''}</span>;
 };
+
+const MatchShowActions = () => (
+  <TopToolbar>
+    <ListButton />
+    <EditButton />
+  </TopToolbar>
+);
 
 const StatsActions = () => {
   const record = useRecordContext();
@@ -71,7 +81,7 @@ export const MatchShow = () => {
   const navigate = useNavigate();
 
   return (
-    <Show title={<MatchTitle />}>
+    <Show title={<MatchTitle />} actions={<MatchShowActions />}>
       <SimpleShowLayout>
         <TextField source="matchId" label="ID" />
         <TextField source="matchType" label="Match Type" />

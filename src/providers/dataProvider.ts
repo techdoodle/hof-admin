@@ -19,7 +19,15 @@ export const dataProvider: DataProvider = {
         query.offset = (page - 1) * perPage;
       }
 
-      const url = `/admin/${resource}?${new URLSearchParams(query)}`;
+      // Build URL with query parameters, handling undefined/null values
+      const queryParams = new URLSearchParams();
+      Object.keys(query).forEach(key => {
+        if (query[key] !== undefined && query[key] !== null) {
+          queryParams.append(key, String(query[key]));
+        }
+      });
+
+      const url = `/admin/${resource}?${queryParams.toString()}`;
       const response = await apiClient.get(url);
 
       console.log('DataProvider getList response:', response.data);
@@ -164,6 +172,9 @@ export const dataProvider: DataProvider = {
         const response = await apiClient.get(`/${resource}/${params.id}`);
         const participant = response.data;
         url = `/admin/matches/${participant.match.matchId}/participants/${participant.user.id}`;
+      } else if (resource === 'matches') {
+        // Matches should use the cancel endpoint, not delete
+        throw new Error('Match deletion is not allowed. Use the cancel match feature instead.');
       } else {
         url = `/admin/${resource}/${params.id}`;
       }

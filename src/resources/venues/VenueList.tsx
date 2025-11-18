@@ -4,6 +4,7 @@ import {
     Datagrid,
     TextField,
     EditButton,
+    ShowButton,
     DeleteButton,
     SearchInput,
     FunctionField,
@@ -21,16 +22,16 @@ const venueFilters = [
 
 const VenueListActions = () => {
     const navigate = useNavigate();
-    
+
     return (
         <TopToolbar>
             <CreateButton />
             <Button
                 color="primary"
                 startIcon={<UploadFileIcon />}
-                onClick={() => navigate('/venues/upload-excel')}
+                onClick={() => navigate('/venues/upload-csv')}
             >
-                Upload Excel
+                Upload CSV
             </Button>
             <ExportButton />
         </TopToolbar>
@@ -93,6 +94,7 @@ export const VenueList = () => {
                         );
                     }}
                 />
+                <ShowButton />
                 <EditButton />
                 <DeleteButton />
             </Datagrid>

@@ -9,6 +9,12 @@ import {
     List,
     ListItem,
     ListItemText,
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableHead,
+    TableRow,
 } from '@mui/material';
 import { useNotify } from 'react-admin';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
@@ -18,9 +24,15 @@ interface UploadResult {
     created: number;
     updated: number;
     errors: string[];
+    failedVenues?: Array<{
+        row: number;
+        venueName: string;
+        phoneNumber: string;
+        reason: string;
+    }>;
 }
 
-export const VenueExcelUpload = () => {
+export const VenueCsvUpload = () => {
     const [file, setFile] = useState<File | null>(null);
     const [uploading, setUploading] = useState(false);
     const [result, setResult] = useState<UploadResult | null>(null);
@@ -29,11 +41,11 @@ export const VenueExcelUpload = () => {
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const selectedFile = event.target.files?.[0];
         if (selectedFile) {
-            const validExtensions = ['.xlsx', '.xls'];
+            const validExtensions = ['.csv'];
             const fileExtension = selectedFile.name.toLowerCase().substring(selectedFile.name.lastIndexOf('.'));
             
             if (!validExtensions.includes(fileExtension)) {
-                notify('Please select a valid Excel file (.xlsx or .xls)', { type: 'error' });
+                notify('Please select a valid CSV file (.csv)', { type: 'error' });
                 return;
             }
             
@@ -50,7 +62,7 @@ export const VenueExcelUpload = () => {
                 return;
             }
 
-            const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:8000'}/admin/venues/excel-template`, {
+            const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:8000'}/admin/venues/csv-template`, {
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -65,7 +77,7 @@ export const VenueExcelUpload = () => {
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = 'venue_template.xlsx';
+            a.download = 'venue_template.csv';
             document.body.appendChild(a);
             a.click();
             window.URL.revokeObjectURL(url);
@@ -84,7 +96,7 @@ export const VenueExcelUpload = () => {
         }
 
         const confirmed = window.confirm(
-            '⚠️ WARNING: This will update existing venues (matched by phone number) and create new ones. Existing venues not in the Excel file will remain unchanged. Are you sure you want to continue?'
+            '⚠️ WARNING: This will update existing venues (matched by name) and create new ones. Existing venues not in the CSV file will remain unchanged. Are you sure you want to continue?'
         );
 
         if (!confirmed) {
@@ -106,7 +118,7 @@ export const VenueExcelUpload = () => {
                 return;
             }
             
-            const response = await fetch(`${apiUrl}/admin/venues/upload-excel`, {
+            const response = await fetch(`${apiUrl}/admin/venues/upload-csv`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -141,13 +153,13 @@ export const VenueExcelUpload = () => {
     return (
         <Box sx={{ p: 3, maxWidth: 800, mx: 'auto' }}>
             <Typography variant="h4" gutterBottom>
-                Upload Venues via Excel
+                Upload Venues via CSV
             </Typography>
 
             <Alert severity="info" sx={{ mb: 3 }}>
                 <Typography variant="body2">
-                    <strong>How it works:</strong> Venues are matched by phone number. If a venue with the same phone number exists, it will be updated. 
-                    New venues will be created. Existing venues not in the Excel file will remain unchanged. This preserves venue IDs and maintains links to existing matches.
+                    <strong>How it works:</strong> Venues are matched by name. If a venue with the same name exists, it will be updated. 
+                    New venues will be created. Existing venues not in the CSV file will remain unchanged. This preserves venue IDs and maintains links to existing matches.
                 </Typography>
             </Alert>
 
@@ -156,7 +168,7 @@ export const VenueExcelUpload = () => {
                     Step 1: Download Template
                 </Typography>
                 <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                    Download the Excel template to see the required format and column structure.
+                    Download the CSV template to see the required format and column structure.
                 </Typography>
                 <Button
                     variant="outlined"
@@ -168,21 +180,21 @@ export const VenueExcelUpload = () => {
                 </Button>
 
                 <Typography variant="h6" gutterBottom sx={{ mt: 3 }}>
-                    Step 2: Upload Excel File
+                    Step 2: Upload CSV File
                 </Typography>
                 <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                    Select your Excel file (.xlsx or .xls) containing venue data.
+                    Select your CSV file (.csv) containing venue data.
                 </Typography>
                 
                 <Box sx={{ mb: 2 }}>
                     <input
-                        accept=".xlsx,.xls"
+                        accept=".csv"
                         style={{ display: 'none' }}
-                        id="excel-file-input"
+                        id="csv-file-input"
                         type="file"
                         onChange={handleFileChange}
                     />
-                    <label htmlFor="excel-file-input">
+                    <label htmlFor="csv-file-input">
                         <Button
                             variant="outlined"
                             component="span"
@@ -241,6 +253,41 @@ export const VenueExcelUpload = () => {
                                     </ListItem>
                                 ))}
                             </List>
+                        </Box>
+                    )}
+
+                    {result.failedVenues && result.failedVenues.length > 0 && (
+                        <Box sx={{ mt: 3 }}>
+                            <Alert severity="warning" sx={{ mb: 2 }}>
+                                <Typography variant="body2">
+                                    {result.failedVenues.length} venue(s) failed Google Maps URL parsing but were saved without coordinates.
+                                </Typography>
+                            </Alert>
+                            <Typography variant="subtitle2" gutterBottom>
+                                Failed Venues:
+                            </Typography>
+                            <TableContainer>
+                                <Table size="small">
+                                    <TableHead>
+                                        <TableRow>
+                                            <TableCell><strong>Row</strong></TableCell>
+                                            <TableCell><strong>Venue Name</strong></TableCell>
+                                            <TableCell><strong>Phone Number</strong></TableCell>
+                                            <TableCell><strong>Reason</strong></TableCell>
+                                        </TableRow>
+                                    </TableHead>
+                                    <TableBody>
+                                        {result.failedVenues.map((failedVenue, index) => (
+                                            <TableRow key={index}>
+                                                <TableCell>{failedVenue.row}</TableCell>
+                                                <TableCell>{failedVenue.venueName}</TableCell>
+                                                <TableCell>{failedVenue.phoneNumber}</TableCell>
+                                                <TableCell>{failedVenue.reason}</TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </TableContainer>
                         </Box>
                     )}
                 </Paper>

@@ -12,8 +12,8 @@ import { UserList, UserEdit, UserCreate, UserShow } from './resources/users';
 import { MatchList, MatchEdit, MatchCreate, MatchShow } from './resources/matches';
 import { MatchParticipantList, MatchParticipantCreate } from './resources/matchParticipants';
 import { PlayerNationUpload } from './resources/playernation';
-import { VenueList, VenueEdit, VenueCreate } from './resources/venues';
-import { VenueExcelUpload } from './resources/venues/VenueExcelUpload';
+import { VenueList, VenueEdit, VenueCreate, VenueShow } from './resources/venues';
+import { VenueCsvUpload } from './resources/venues/VenueExcelUpload';
 import { MatchStatsEdit } from './resources/matchStats';
 
 // Icons
@@ -88,7 +88,7 @@ const App = () => (
     <CustomRoutes>
       <Route path="/playernation/upload" element={<PlayerNationUpload />} />
       <Route path="/match-stats/:matchId/edit" element={<MatchStatsEdit />} />
-      <Route path="/venues/upload-excel" element={<VenueExcelUpload />} />
+      <Route path="/venues/upload-csv" element={<VenueCsvUpload />} />
     </CustomRoutes>
 
     {/* Venue Management */}
@@ -97,6 +97,7 @@ const App = () => (
       list={VenueList}
       edit={VenueEdit}
       create={VenueCreate}
+      show={VenueShow}
       icon={LocationOnIcon}
       options={{ label: 'Venues' }}
     />

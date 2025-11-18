@@ -12,11 +12,15 @@ import {
   TopToolbar,
   CreateButton,
   useInput,
+  ListButton,
+  ShowButton,
 } from 'react-admin';
 import { Box, Typography } from '@mui/material';
 
 const MatchEditToolbar = () => (
   <TopToolbar>
+    <ListButton />
+    <ShowButton />
     <CreateButton
       resource="venues"
       label="Add New Venue"
@@ -68,7 +72,7 @@ const PricingFields = () => {
 export const MatchEdit = () => {
   // No need for transform as we're using direct IDs
   return (
-    <Edit actions={<MatchEditToolbar />}>
+    <Edit actions={<MatchEditToolbar />} mutationMode="pessimistic">
       <SimpleForm>
         <Typography variant="h6" gutterBottom>
           Match Details
@@ -154,7 +158,7 @@ export const MatchEdit = () => {
           </Box>
           <Box flex="1 1 300px">
             <NumberInput
-              source="player_capacity"
+              source="playerCapacity"
               label="Player Capacity"
               min={0}
               fullWidth
@@ -162,7 +166,7 @@ export const MatchEdit = () => {
           </Box>
           <Box flex="1 1 300px">
             <NumberInput
-              source="buffer_capacity"
+              source="bufferCapacity"
               label="Buffer Capacity"
               min={0}
               defaultValue={0}
@@ -186,11 +190,10 @@ export const MatchEdit = () => {
           <Box flex="1 1 300px">
             <ReferenceInput
               source="footballChief.id"
-              reference="users"
-              filter={{ role: 'football_chief,academy_admin,admin,super_admin' }}
+              reference="chiefs"
             >
               <SelectInput
-                optionText={(record) => `${record.firstName} ${record.lastName}`}
+                optionText="fullName"
                 validate={required()}
                 fullWidth
               />

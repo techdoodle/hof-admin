@@ -5,10 +5,8 @@ import {
     TextField,
     DateField,
     NumberField,
-    BooleanField,
     EditButton,
     ShowButton,
-    DeleteButton,
     SearchInput,
     DateInput,
     usePermissions,
@@ -25,7 +23,9 @@ import { useNavigate } from 'react-router-dom';
 import GroupIcon from '@mui/icons-material/Group';
 import VideoCallIcon from '@mui/icons-material/VideoCall';
 import RefreshIcon from '@mui/icons-material/Refresh';
+import CancelIcon from '@mui/icons-material/Cancel';
 import { useDataProvider, useNotify } from 'react-admin';
+import { MatchCancelDialog } from './MatchCancelDialog';
 
 const matchFilters = [
     <SearchInput source="search" placeholder="Search matches..." alwaysOn />,
@@ -69,9 +69,10 @@ const MatchActions = ({ record }: any) => {
     const { permissions } = usePermissions();
     const dataProvider = useDataProvider();
     const notify = useNotify();
+    const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
 
     const canEditMatches = ['football_chief', 'academy_admin', 'admin', 'super_admin'].includes(permissions);
-    const canDeleteMatches = permissions === 'super_admin';
+    const canCancelMatches = permissions === 'super_admin';
     const canManageParticipants = ['football_chief', 'academy_admin', 'admin', 'super_admin'].includes(permissions);
 
     const handleParticipants = () => {
@@ -130,7 +131,33 @@ const MatchActions = ({ record }: any) => {
             )}
             <ShowButton record={record} />
             {canEditMatches && <EditButton record={record} />}
-            {canDeleteMatches && <DeleteButton record={record} />}
+            {canCancelMatches && record.status !== 'CANCELLED' && (
+                <Button
+                    size="small"
+                    startIcon={<CancelIcon />}
+                    onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setCancelDialogOpen(true);
+                    }}
+                    variant="outlined"
+                    color="error"
+                >
+                    Cancel Match
+                </Button>
+            )}
+            {canCancelMatches && record.status === 'CANCELLED' && (
+                <Chip label="Cancelled" color="error" size="small" />
+            )}
+            <MatchCancelDialog
+                open={cancelDialogOpen}
+                matchId={record.matchId}
+                onClose={() => setCancelDialogOpen(false)}
+                onConfirm={() => {
+                    setCancelDialogOpen(false);
+                    window.location.reload(); // Refresh the page to show updated match status
+                }}
+            />
         </div>
     );
 };
@@ -163,7 +190,14 @@ export const MatchList = () => {
 
     const listFilter = useMemo(() => {
         const f: any = {};
-        if (dateFrom) f.dateFrom = dateFrom;
+        
+        // Always filter out matches older than 7 days
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+        f.dateFrom = dateFrom 
+            ? (new Date(dateFrom) > sevenDaysAgo ? dateFrom : sevenDaysAgo.toISOString())
+            : sevenDaysAgo.toISOString();
+        
         if (dateTo) f.dateTo = dateTo;
         return f;
     }, [dateFrom, dateTo]);
@@ -185,8 +219,37 @@ export const MatchList = () => {
             perPage={25}
             sort={{ field: 'startTime', order: 'DESC' }}
         >
-            <Datagrid rowClick={false}>
+            <Datagrid rowClick={false} bulkActionButtons={false}>
                 <TextField source="matchId" label="ID" />
+                <FunctionField
+                    label="Actions"
+                    render={(record: any) => <MatchActions record={record} />}
+                />
+                <FunctionField
+                    label="Status"
+                    render={(record: any) => {
+                        const status = record.status;
+                        // CANCELLED always takes highest priority
+                        if (status === 'CANCELLED') {
+                            return <Chip label="Cancelled" color="error" size="small" />;
+                        }
+                        // Stats workflow statuses for recorded matches
+                        if (status === 'STATS_SUBMISSION_PENDING') {
+                            return <Chip label="Stats Submission Pending" color="warning" size="small" />;
+                        }
+                        if (status === 'POLLING_STATS') {
+                            return <Chip label="Polling Stats" color="info" size="small" />;
+                        }
+                        if (status === 'SS_MAPPING_PENDING') {
+                            return <Chip label="SS Mapping Pending" color="info" size="small" />;
+                        }
+                        if (status === 'STATS_UPDATED') {
+                            return <Chip label="Stats Updated" color="success" size="small" />;
+                        }
+                        // Default to Active for non-recorded matches or when no stats workflow applies
+                        return <Chip label="Active" color="success" size="small" />;
+                    }}
+                />
                 <TextField source="matchType" label="Match Type" />
                 <NumberField source="playerCapacity" label="Player Capacity" />
                 <FunctionField
@@ -195,9 +258,6 @@ export const MatchList = () => {
                 />
                 <DateField source="startTime" label="Start Time" showTime />
                 <DateField source="endTime" label="End Time" showTime />
-                <BooleanField source="statsReceived" label="Stats Received" />
-                <NumberField source="teamAScore" label="Team A Score" />
-                <NumberField source="teamBScore" label="Team B Score" />
                 <FunctionField
                     label="Football Chief"
                     render={(record: any) =>
@@ -233,14 +293,8 @@ export const MatchList = () => {
                         return <Chip label={`₹${record.slotPrice}`} color="primary" size="small" />;
                     }}
                 />
-                <TextField source="matchHighlights" label="Highlights" />
-                <TextField source="matchRecap" label="Recap" />
                 <DateField source="createdAt" label="Created At" showTime />
                 <DateField source="updatedAt" label="Updated At" showTime />
-                <FunctionField
-                    label="Actions"
-                    render={(record: any) => <MatchActions record={record} />}
-                />
             </Datagrid>
         </List>
         </>

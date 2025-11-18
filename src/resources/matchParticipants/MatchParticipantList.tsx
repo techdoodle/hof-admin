@@ -4,8 +4,7 @@ import {
   List,
   Datagrid,
   TextField,
-  ReferenceField,
-  DeleteButton,
+  FunctionField,
   usePermissions,
   TopToolbar,
   CreateButton,
@@ -14,9 +13,16 @@ import {
   useGetList,
   Form,
   RaRecord,
+  useListContext,
+  useNotify,
+  useDataProvider,
 } from 'react-admin';
 import { useQueryClient } from '@tanstack/react-query';
-import { Card, CardContent, Typography, Box, Button, Divider } from '@mui/material';
+import { Card, CardContent, Typography, Box, Button, Divider, Chip, IconButton } from '@mui/material';
+import StarIcon from '@mui/icons-material/Star';
+import StarBorderIcon from '@mui/icons-material/StarBorder';
+import DeleteIcon from '@mui/icons-material/Delete';
+import { ParticipantRemoveDialog } from './ParticipantRemoveDialog';
 
 type AdminRole = 'football_chief' | 'academy_admin' | 'admin' | 'super_admin';
 const ADMIN_ROLES: AdminRole[] = ['football_chief', 'academy_admin', 'admin', 'super_admin'];
@@ -36,7 +42,23 @@ interface MatchParticipant extends RaRecord {
   user: string;
   paidStatsOptIn: boolean;
   matchId: string;
+  paymentType?: string;
+  isMvp?: boolean;
 }
+
+// Serial Number Field Component
+const SerialNumberField = ({ label }: { label: string }) => {
+  const { data } = useListContext();
+  return (
+    <FunctionField
+      label={label}
+      render={(record: MatchParticipant) => {
+        const index = data?.findIndex((item: MatchParticipant) => item.id === record.id) ?? -1;
+        return index >= 0 ? index + 1 : '-';
+      }}
+    />
+  );
+};
 
 const MatchSelector = ({ onMatchSelect }: MatchSelectorProps) => {
   const { data, isLoading } = useGetList<Match>('matches', {
@@ -90,6 +112,11 @@ const MatchSelector = ({ onMatchSelect }: MatchSelectorProps) => {
 const ParticipantsList = ({ matchId, onMatchChange }: { matchId: string; onMatchChange: (id: string | null) => void }) => {
   const { permissions } = usePermissions<AdminRole>();
   const canManageParticipants = permissions ? ADMIN_ROLES.includes(permissions) : false;
+  const notify = useNotify();
+  const dataProvider = useDataProvider();
+  const queryClient = useQueryClient();
+  const [removeDialogOpen, setRemoveDialogOpen] = useState(false);
+  const [selectedParticipant, setSelectedParticipant] = useState<MatchParticipant | null>(null);
   const { data: matches, isLoading } = useGetList<Match>('matches', {
     pagination: { page: 1, perPage: 100 },
     sort: { field: 'startTime', order: 'DESC' }
@@ -101,6 +128,54 @@ const ParticipantsList = ({ matchId, onMatchChange }: { matchId: string; onMatch
       onMatchChange(value);
     }
   }, [matchId, onMatchChange]);
+
+  const handleSetMvp = React.useCallback(async (userId: number) => {
+    try {
+      await dataProvider.custom(`admin/matches/${matchId}/mvp`, {
+        method: 'PATCH',
+        data: { userId }
+      });
+      notify('MVP assigned successfully', { type: 'success' });
+      // Refresh the participant list
+      queryClient.invalidateQueries({ queryKey: ['match-participants'] });
+    } catch (error: any) {
+      notify(error?.message || 'Failed to assign MVP', { type: 'error' });
+    }
+  }, [matchId, dataProvider, notify, queryClient]);
+
+  const handleRemoveClick = React.useCallback((record: MatchParticipant) => {
+    setSelectedParticipant(record);
+    setRemoveDialogOpen(true);
+  }, []);
+
+  const handleRemoveConfirm = React.useCallback(async (shouldRefund: boolean) => {
+    if (!selectedParticipant) return;
+
+    const userData = (selectedParticipant as any).userData;
+    const userId = userData?.id;
+
+    if (!userId) {
+      notify('Cannot remove participant: User ID not found', { type: 'error' });
+      return;
+    }
+
+    try {
+      // Use custom endpoint to pass shouldRefund parameter
+      await dataProvider.custom(
+        `admin/matches/${matchId}/participants/${userId}`,
+        {
+          method: 'DELETE',
+          data: { shouldRefund }
+        }
+      );
+      notify('Participant removed successfully', { type: 'success' });
+      queryClient.invalidateQueries({ queryKey: ['match-participants'] });
+      setRemoveDialogOpen(false);
+      setSelectedParticipant(null);
+    } catch (error: any) {
+      notify(error?.message || 'Failed to remove participant', { type: 'error' });
+    }
+  }, [selectedParticipant, matchId, dataProvider, notify, queryClient]);
 
   return (
     <>
@@ -157,29 +232,120 @@ const ParticipantsList = ({ matchId, onMatchChange }: { matchId: string; onMatch
             bulkActionButtons={false}
             optimized
           >
-            <TextField source="id" label="User ID" />
+            <SerialNumberField label="S.No" />
             <TextField source="teamName" label="Team" />
-            <ReferenceField
-              source="user"
-              reference="users"
+            <FunctionField
               label="Player"
-              emptyText="-"
-              link={false}
-            >
-              <TextField source="firstName" />
-            </ReferenceField>
-
-
+              render={(record: MatchParticipant) => {
+                const userData = (record as any).userData;
+                if (userData) {
+                  const fullName = [userData.firstName, userData.lastName].filter(Boolean).join(' ') || userData.phoneNumber || '-';
+                  return fullName;
+                }
+                return '-';
+              }}
+            />
+            <FunctionField
+              label="MVP"
+              render={(record: MatchParticipant) => {
+                const isMvp = record.isMvp || false;
+                return isMvp ? (
+                  <Chip 
+                    label="MVP" 
+                    color="primary"
+                    size="small"
+                    icon={<StarIcon />}
+                  />
+                ) : (
+                  <Typography variant="body2" color="textSecondary">-</Typography>
+                );
+              }}
+            />
+            <FunctionField
+              label="Payment Type"
+              render={(record: MatchParticipant) => {
+                const paymentType = (record as any).paymentType || 'N/A';
+                let chipColor: 'warning' | 'success' | 'default' = 'default';
+                let chipLabel = paymentType;
+                
+                if (paymentType === 'Cash') {
+                  chipColor = 'warning';
+                } else if (paymentType === 'Online/Razorpay') {
+                  chipColor = 'success';
+                }
+                
+                return (
+                  <Chip 
+                    label={chipLabel} 
+                    color={chipColor}
+                    size="small"
+                  />
+                );
+              }}
+            />
             {canManageParticipants && (
-              <DeleteButton
-                mutationMode="pessimistic"
-                confirmTitle="Delete participant?"
-                confirmContent="Are you sure you want to delete this participant?"
+              <FunctionField
+                label="Set MVP"
+                render={(record: MatchParticipant) => {
+                  const userData = (record as any).userData;
+                  const userId = userData?.id;
+                  const isMvp = record.isMvp || false;
+                  
+                  if (!userId) return null;
+                  
+                  return (
+                    <IconButton
+                      size="small"
+                      color={isMvp ? 'primary' : 'default'}
+                      onClick={() => handleSetMvp(userId)}
+                      disabled={isMvp}
+                      title={isMvp ? 'Already MVP' : 'Set as MVP'}
+                    >
+                      {isMvp ? <StarIcon /> : <StarBorderIcon />}
+                    </IconButton>
+                  );
+                }}
+              />
+            )}
+            {canManageParticipants && (
+              <FunctionField
+                label="Actions"
+                render={(record: MatchParticipant) => {
+                  return (
+                    <IconButton
+                      size="small"
+                      color="error"
+                      onClick={() => handleRemoveClick(record)}
+                      title="Remove participant"
+                    >
+                      <DeleteIcon />
+                    </IconButton>
+                  );
+                }}
               />
             )}
           </Datagrid>
         </div>
       </List>
+      {selectedParticipant && (
+        <ParticipantRemoveDialog
+          open={removeDialogOpen}
+          onClose={() => {
+            setRemoveDialogOpen(false);
+            setSelectedParticipant(null);
+          }}
+          onConfirm={handleRemoveConfirm}
+          participantName={
+            selectedParticipant.userData
+              ? [selectedParticipant.userData.firstName, selectedParticipant.userData.lastName]
+                  .filter(Boolean)
+                  .join(' ') || selectedParticipant.userData.phoneNumber
+              : undefined
+          }
+          paymentType={(selectedParticipant as any).paymentType}
+          isOnlinePayment={(selectedParticipant as any).paymentType === 'Online/Razorpay'}
+        />
+      )}
     </>
   );
 };
