@@ -143,6 +143,14 @@ export const VenueEdit = () => {
                             defaultValue={coordinates.longitude}
                         />
                     </Box>
+                    <Box flex="1 1 100%">
+                        <TextInput
+                            source="mapsUrl"
+                            label="Maps URL"
+                            placeholder="https://maps.google.com/?q=..."
+                            fullWidth
+                        />
+                    </Box>
                 </Box>
 
                 <Divider sx={{ my: 3 }} />

@@ -75,6 +75,24 @@ export const VenueList = () => {
                         return costs || '-';
                     }}
                 />
+                <FunctionField
+                    label="Maps URL"
+                    render={(record: any) => {
+                        if (!record?.mapsUrl) {
+                            return '-';
+                        }
+                        return (
+                            <a
+                                href={record.mapsUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                style={{ color: '#1976d2', textDecoration: 'underline' }}
+                            >
+                                View Map
+                            </a>
+                        );
+                    }}
+                />
                 <EditButton />
                 <DeleteButton />
             </Datagrid>
