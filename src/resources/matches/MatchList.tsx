@@ -190,7 +190,14 @@ export const MatchList = () => {
 
     const listFilter = useMemo(() => {
         const f: any = {};
-        if (dateFrom) f.dateFrom = dateFrom;
+        
+        // Always filter out matches older than 7 days
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+        f.dateFrom = dateFrom 
+            ? (new Date(dateFrom) > sevenDaysAgo ? dateFrom : sevenDaysAgo.toISOString())
+            : sevenDaysAgo.toISOString();
+        
         if (dateTo) f.dateTo = dateTo;
         return f;
     }, [dateFrom, dateTo]);
