@@ -5,7 +5,6 @@ import {
     TextField,
     DateField,
     NumberField,
-    BooleanField,
     EditButton,
     ShowButton,
     SearchInput,
