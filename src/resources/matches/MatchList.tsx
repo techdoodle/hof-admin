@@ -216,11 +216,31 @@ export const MatchList = () => {
             <Datagrid rowClick={false} bulkActionButtons={false}>
                 <TextField source="matchId" label="ID" />
                 <FunctionField
+                    label="Actions"
+                    render={(record: any) => <MatchActions record={record} />}
+                />
+                <FunctionField
                     label="Status"
                     render={(record: any) => {
-                        if (record.status === 'CANCELLED') {
+                        const status = record.status;
+                        // CANCELLED always takes highest priority
+                        if (status === 'CANCELLED') {
                             return <Chip label="Cancelled" color="error" size="small" />;
                         }
+                        // Stats workflow statuses for recorded matches
+                        if (status === 'STATS_SUBMISSION_PENDING') {
+                            return <Chip label="Stats Submission Pending" color="warning" size="small" />;
+                        }
+                        if (status === 'POLLING_STATS') {
+                            return <Chip label="Polling Stats" color="info" size="small" />;
+                        }
+                        if (status === 'SS_MAPPING_PENDING') {
+                            return <Chip label="SS Mapping Pending" color="info" size="small" />;
+                        }
+                        if (status === 'STATS_UPDATED') {
+                            return <Chip label="Stats Updated" color="success" size="small" />;
+                        }
+                        // Default to Active for non-recorded matches or when no stats workflow applies
                         return <Chip label="Active" color="success" size="small" />;
                     }}
                 />
@@ -232,9 +252,6 @@ export const MatchList = () => {
                 />
                 <DateField source="startTime" label="Start Time" showTime />
                 <DateField source="endTime" label="End Time" showTime />
-                <BooleanField source="statsReceived" label="Stats Received" />
-                <NumberField source="teamAScore" label="Team A Score" />
-                <NumberField source="teamBScore" label="Team B Score" />
                 <FunctionField
                     label="Football Chief"
                     render={(record: any) =>
@@ -270,14 +287,8 @@ export const MatchList = () => {
                         return <Chip label={`₹${record.slotPrice}`} color="primary" size="small" />;
                     }}
                 />
-                <TextField source="matchHighlights" label="Highlights" />
-                <TextField source="matchRecap" label="Recap" />
                 <DateField source="createdAt" label="Created At" showTime />
                 <DateField source="updatedAt" label="Updated At" showTime />
-                <FunctionField
-                    label="Actions"
-                    render={(record: any) => <MatchActions record={record} />}
-                />
             </Datagrid>
         </List>
         </>
