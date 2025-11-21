@@ -13,9 +13,14 @@ export const environments: Record<string, Environment> = {
     },
     staging: {
         name: 'staging',
-        apiUrl: process.env.REACT_APP_API_URL || 'https://hof-web-app-backend-staging.up.railway.app',
+        apiUrl: process.env.REACT_APP_API_URL || 'https://testapi.humansoffootball.in',
         label: 'Staging',
     },
+    // staging: {
+    //     name: 'staging',
+    //     apiUrl: process.env.REACT_APP_API_URL || 'https://hof-web-app-backend-staging.up.railway.app',
+    //     label: 'Staging',
+    // },
     production: {
         name: 'production',
         apiUrl: process.env.REACT_APP_API_URL || 'https://hof-web-app-backend-production.up.railway.app',
