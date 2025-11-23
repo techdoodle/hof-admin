@@ -23,9 +23,14 @@ export const environments: Record<string, Environment> = {
     // },
     production: {
         name: 'production',
-        apiUrl: process.env.REACT_APP_API_URL || 'https://hof-web-app-backend-production.up.railway.app',
+        apiUrl: process.env.REACT_APP_API_URL || 'https://api.humansoffootball.in',
         label: 'Production',
     },
+    // production: {
+    //     name: 'production',
+    //     apiUrl: process.env.REACT_APP_API_URL || 'https://hof-web-app-backend-production.up.railway.app',
+    //     label: 'Production',
+    // },
 };
 
 export const getCurrentEnvironment = (): Environment => {
