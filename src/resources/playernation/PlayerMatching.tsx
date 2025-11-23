@@ -236,25 +236,32 @@ const PlayerMatching: React.FC<PlayerMatchingProps> = ({ matchId, onClose }) => 
                 {externalPlayers.map((player) => {
                   const matchedPlayer = getMatchedPlayer(player.externalPlayerId);
                   return (
-                    <Card key={player.externalPlayerId} sx={{ mb: 2 }}>
+                      <Card key={player.externalPlayerId} sx={{ mb: 2 }}>
                       <CardContent>
-                        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                          {player.thumbnailUrls && player.thumbnailUrls[0] ? (
-                            <Box
-                              component="img"
-                              src={player.thumbnailUrls[0]}
-                              alt={player.externalName}
-                              sx={{
-                                mr: 2,
-                                width: { xs: 120, sm: 160 },
-                                height: 'auto',
-                                borderRadius: 1,
-                                objectFit: 'cover',
-                                boxShadow: 1,
-                              }}
-                            />
+                        <Box sx={{ mb: 2 }}>
+                          {player.thumbnailUrls && player.thumbnailUrls.length > 0 ? (
+                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mb: 2, alignItems: 'flex-start' }}>
+                              {player.thumbnailUrls.map((url, idx) => (
+                                <Box
+                                  key={idx}
+                                  component="img"
+                                  src={url}
+                                  alt={`${player.externalName} - Photo ${idx + 1}`}
+                                  sx={{
+                                    width: 'auto',
+                                    maxWidth: { xs: 200, sm: 250 },
+                                    height: 'auto',
+                                    borderRadius: 1,
+                                    objectFit: 'contain',
+                                    boxShadow: 1,
+                                    border: '1px solid',
+                                    borderColor: 'divider',
+                                  }}
+                                />
+                              ))}
+                            </Box>
                           ) : (
-                            <Avatar sx={{ mr: 2, width: 56, height: 56 }}>
+                            <Avatar sx={{ mb: 2, width: 56, height: 56 }}>
                               <PersonIcon />
                             </Avatar>
                           )}
