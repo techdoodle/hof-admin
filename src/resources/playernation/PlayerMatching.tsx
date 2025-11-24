@@ -116,6 +116,23 @@ const PlayerMatching: React.FC<PlayerMatchingProps> = ({ matchId, onClose }) => 
       });
 
       setInternalPlayers(participants);
+
+      // Load existing mappings to restore state
+      try {
+        const mappingsResponse = await dataProvider.custom(`admin/playernation/mappings/${matchId}`, {});
+        console.log('[PlayerMatching] existing mappings response:', mappingsResponse);
+        const existingMappings = mappingsResponse.data || [];
+        const mappingsMap = new Map<string, number>();
+        existingMappings.forEach((m: { externalPlayerId: string; internalPlayerId: number | null }) => {
+          if (m.internalPlayerId) {
+            mappingsMap.set(m.externalPlayerId, m.internalPlayerId);
+          }
+        });
+        setMappings(mappingsMap);
+      } catch (mappingError) {
+        console.warn('[PlayerMatching] Failed to load existing mappings:', mappingError);
+        // Continue even if mappings fail to load
+      }
     } catch (error) {
       notify('Failed to load player data', { type: 'error' });
     } finally {
@@ -181,7 +198,16 @@ const PlayerMatching: React.FC<PlayerMatchingProps> = ({ matchId, onClose }) => 
     }
   };
 
+  // Get set of already mapped internal player IDs
+  const mappedInternalPlayerIds = new Set(Array.from(mappings.values()));
+
   const filteredInternalPlayers = internalPlayers.filter(player => {
+    // Exclude already mapped players from dropdown
+    if (mappedInternalPlayerIds.has(player.id)) {
+      return false;
+    }
+    
+    // Apply search filter
     const first = (player.firstName || '').toString();
     const last = (player.lastName || '').toString();
     const phoneRaw = (player.phoneNumber || '').toString();
