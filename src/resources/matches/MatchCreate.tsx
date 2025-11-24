@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Create,
   SimpleForm,
@@ -11,8 +11,10 @@ import {
   CreateButton,
   useInput,
   TextInput,
+  useNotify,
 } from 'react-admin';
-import { Box, Typography } from '@mui/material';
+import { Box, Typography, Tabs, Tab } from '@mui/material';
+import { RecurringMatchCreate } from './RecurringMatchCreate';
 
 const MatchCreateToolbar = () => (
   <TopToolbar>
@@ -67,9 +69,23 @@ const PricingFields = () => {
 };
 
 export const MatchCreate = () => {
+  const notify = useNotify();
+  const [tabValue, setTabValue] = useState(0);
+
+  const onSuccess = (data: any) => {
+    notify('Match created successfully! You can create another match.', { type: 'success' });
+    // Form will reset automatically with redirect={false}
+  };
+
   return (
-    <Create actions={<MatchCreateToolbar />}>
-      <SimpleForm>
+    <Create actions={<MatchCreateToolbar />} redirect={false} mutationOptions={{ onSuccess }}>
+      <Box sx={{ width: '100%' }}>
+        <Tabs value={tabValue} onChange={(e, newValue) => setTabValue(newValue)} sx={{ mb: 3 }}>
+          <Tab label="Single Match" />
+          <Tab label="Recurring Matches" />
+        </Tabs>
+        {tabValue === 0 ? (
+          <SimpleForm>
         <Typography variant="h6" gutterBottom>
           Match Details
         </Typography>
@@ -181,6 +197,10 @@ export const MatchCreate = () => {
           </Box>
         </Box>
       </SimpleForm>
+        ) : (
+          <RecurringMatchCreate />
+        )}
+      </Box>
     </Create>
   );
 };
