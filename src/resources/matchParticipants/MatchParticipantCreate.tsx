@@ -8,6 +8,7 @@ import {
   TextInput,
   NumberInput,
   required,
+  useNotify,
 } from 'react-admin';
 import { useLocation, useSearchParams, useNavigate } from 'react-router-dom';
 import { Toolbar, SaveButton } from 'react-admin';
@@ -21,6 +22,7 @@ export const MatchParticipantCreate = () => {
   const location = useLocation();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const notify = useNotify();
 
   // Try to get matchId from multiple sources
   const matchId =
@@ -28,13 +30,17 @@ export const MatchParticipantCreate = () => {
     searchParams.get('matchId') ||
     new URLSearchParams(location.search).get('matchId');
 
-
   const transform = (data: any) => ({
     ...data,
     matchId: matchId || data.matchId, // Ensure matchId is always included
     userId: data.user, // Backend expects userId, not user
     cashAmount: data.cashAmount || 0, // Ensure cashAmount is passed (defaults to 0)
   });
+
+  const onSuccess = (data: any) => {
+    notify('Participant added successfully! You can add another participant.', { type: 'success' });
+    // Form will reset automatically with redirect={false}
+  };
 
   // Load match to derive team names
   const numericMatchId = matchId ? parseInt(String(matchId), 10) : undefined;
@@ -66,7 +72,7 @@ export const MatchParticipantCreate = () => {
   );
 
   return (
-    <Create redirect={false} transform={transform}>
+    <Create redirect={false} transform={transform} mutationOptions={{ onSuccess }}>
       <SimpleForm toolbar={<BackToolbar />}>
         <TextInput
           source="matchId"
