@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box,
   Card,
@@ -73,30 +73,32 @@ export const AccountingDashboard: React.FC = () => {
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   const isSuperAdmin = user.role === 'super_admin';
 
-  const fetchSummary = async (from?: string, to?: string) => {
-    if (!isSuperAdmin) return;
-    setLoading(true);
-    setError(null);
-    try {
-      const params = new URLSearchParams();
-      if (from) params.append('dateFrom', from);
-      if (to) params.append('dateTo', to);
-      
-      const url = `/admin/accounting/summary${params.toString() ? '?' + params.toString() : ''}`;
-      const response = await apiClient.get(url);
-      setSummary(response.data);
-    } catch (err: any) {
-      setError(err.response?.data?.message || err.message || 'Failed to fetch accounting data');
-    } finally {
-      setLoading(false);
-    }
-  };
+  const fetchSummary = useCallback(
+    async (from?: string, to?: string) => {
+      if (!isSuperAdmin) return;
+      setLoading(true);
+      setError(null);
+      try {
+        const params = new URLSearchParams();
+        if (from) params.append('dateFrom', from);
+        if (to) params.append('dateTo', to);
+
+        const url = `/admin/accounting/summary${params.toString() ? '?' + params.toString() : ''}`;
+        const response = await apiClient.get(url);
+        setSummary(response.data);
+      } catch (err: any) {
+        setError(err.response?.data?.message || err.message || 'Failed to fetch accounting data');
+      } finally {
+        setLoading(false);
+      }
+    },
+    [isSuperAdmin],
+  );
 
   // Initial load: current month by default
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     fetchSummary(defaultFrom, defaultTo);
-  }, []);
+  }, [fetchSummary, defaultFrom, defaultTo]);
 
   const handleApplyFilter = () => {
     setAppliedDateFrom(dateFrom);

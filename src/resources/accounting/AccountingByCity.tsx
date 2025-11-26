@@ -67,7 +67,6 @@ export const AccountingByCity: React.FC<AccountingByCityProps> = ({ dateFrom, da
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<CityAccounting[]>([]);
   const [expandedCityId, setExpandedCityId] = useState<number | null>(null);
-  const [matchPage, setMatchPage] = useState(1);
   const [matchData, setMatchData] = useState<{
     [cityId: number]: { page: number; pageSize: number; total: number; data: MatchAccounting[] }
   }>({});
@@ -124,7 +123,6 @@ export const AccountingByCity: React.FC<AccountingByCityProps> = ({ dateFrom, da
         ...prev,
         [cityId]: { page, pageSize, total, data: rows },
       }));
-      setMatchPage(page);
     } catch (err: any) {
       setDrilldownError(err.response?.data?.message || err.message || 'Failed to fetch match details');
     } finally {

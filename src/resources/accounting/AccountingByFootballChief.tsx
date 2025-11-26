@@ -69,7 +69,6 @@ export const AccountingByFootballChief: React.FC<AccountingByFootballChiefProps>
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<FootballChiefAccounting[]>([]);
   const [expandedChiefId, setExpandedChiefId] = useState<number | null>(null);
-  const [matchPage, setMatchPage] = useState(1);
   const [matchData, setMatchData] = useState<{
     [chiefId: number]: { page: number; pageSize: number; total: number; data: MatchAccounting[] }
   }>({});
@@ -126,7 +125,6 @@ export const AccountingByFootballChief: React.FC<AccountingByFootballChiefProps>
         ...prev,
         [chiefId]: { page, pageSize, total, data: rows },
       }));
-      setMatchPage(page);
     } catch (err: any) {
       setDrilldownError(err.response?.data?.message || err.message || 'Failed to fetch match details');
     } finally {
