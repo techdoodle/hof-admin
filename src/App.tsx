@@ -15,12 +15,14 @@ import { PlayerNationUpload } from './resources/playernation';
 import { VenueList, VenueEdit, VenueCreate, VenueShow } from './resources/venues';
 import { VenueCsvUpload } from './resources/venues/VenueExcelUpload';
 import { MatchStatsEdit } from './resources/matchStats';
+import { AccountingDashboard } from './resources/accounting';
 
 // Icons
 import PersonIcon from '@mui/icons-material/Person';
 import SportsFootballIcon from '@mui/icons-material/SportsFootball';
 import GroupIcon from '@mui/icons-material/Group';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
+import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
 
 // Custom Layout
 import { Layout } from './layout/Layout';
@@ -100,6 +102,14 @@ const App = () => (
       show={VenueShow}
       icon={LocationOnIcon}
       options={{ label: 'Venues' }}
+    />
+
+    {/* Accounting - Super Admin only */}
+    <Resource
+      name="accounting"
+      list={AccountingDashboard}
+      icon={AccountBalanceIcon}
+      options={{ label: 'Accounting' }}
     />
   </Admin>
 );

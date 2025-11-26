@@ -196,6 +196,21 @@ export const MatchCreate = () => {
             </ReferenceInput>
           </Box>
         </Box>
+
+        <Typography variant="h6" gutterBottom style={{ marginTop: 24 }}>
+          Match Costs
+        </Typography>
+        <Box display="flex" flexWrap="wrap" gap={2} sx={{ mb: 3 }}>
+          <Box flex="1 1 300px">
+            <NumberInput
+              source="footballChiefCost"
+              label="Football Chief Cost (₹)"
+              min={0}
+              fullWidth
+              helperText="Cost paid to football chief for this match"
+            />
+          </Box>
+        </Box>
       </SimpleForm>
         ) : (
           <RecurringMatchCreate />

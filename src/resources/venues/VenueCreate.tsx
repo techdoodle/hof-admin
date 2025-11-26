@@ -138,12 +138,28 @@ export const VenueCreate = () => {
         ];
 
         formats.forEach(({ key, enum: enumValue }) => {
-            const costKey = `${key}_Cost`;
-            if (data[costKey] !== undefined && data[costKey] !== null && data[costKey] !== '') {
-                venueFormats.push({
+            const baseKey = `${key}_Cost`;
+            const morningKey = `${key}_MorningCost`;
+            const weekendKey = `${key}_WeekendCost`;
+            const weekendMorningKey = `${key}_WeekendMorningCost`;
+
+            if (data[baseKey] !== undefined && data[baseKey] !== null && data[baseKey] !== '') {
+                const formatEntry: any = {
                     format: enumValue,
-                    cost: Number(data[costKey]),
-                });
+                    cost: Number(data[baseKey]),
+                };
+
+                if (data[morningKey] !== undefined && data[morningKey] !== null && data[morningKey] !== '') {
+                    formatEntry.morningCost = Number(data[morningKey]);
+                }
+                if (data[weekendKey] !== undefined && data[weekendKey] !== null && data[weekendKey] !== '') {
+                    formatEntry.weekendCost = Number(data[weekendKey]);
+                }
+                if (data[weekendMorningKey] !== undefined && data[weekendMorningKey] !== null && data[weekendMorningKey] !== '') {
+                    formatEntry.weekendMorningCost = Number(data[weekendMorningKey]);
+                }
+
+                venueFormats.push(formatEntry);
             }
         });
 
@@ -234,67 +250,304 @@ export const VenueCreate = () => {
                 <Divider sx={{ my: 3 }} />
 
                 <Typography variant="h6" gutterBottom>
+                    Time-based Pricing Settings
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                    Morning prices apply to matches starting before this hour. Default is 12 (noon), so matches
+                    starting before 12:00 use morning pricing and others use base/evening pricing.
+                </Typography>
+                <Box sx={{ mb: 3, maxWidth: 260 }}>
+                    <NumberInput
+                        source="morningEndHour"
+                        label="Morning ends at hour (0–23, default 12)"
+                        min={0}
+                        max={23}
+                        defaultValue={12}
+                        helperText="Example: 12 means matches before 12:00 use morning prices; 18 means before 18:00 (6 PM)."
+                        fullWidth
+                    />
+                </Box>
+
+                <Divider sx={{ my: 3 }} />
+
+                <Typography variant="h6" gutterBottom>
                     Format Costs (per match)
                 </Typography>
                 <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                    Optional: Enter cost for each format. Leave empty if not applicable.
+                    For each format, set a base cost (typically evening/regular) and optionally override for
+                    weekday mornings, weekends, or weekend mornings. Leave overrides empty to use the base cost.
                 </Typography>
-                <Box display="flex" flexWrap="wrap" gap={2}>
-                    <Box flex="1 1 200px">
-                        <NumberInput
-                            source="5v5_Cost"
-                            label="5v5 Cost (₹)"
-                            min={0}
-                            fullWidth
-                        />
+
+                {/* 5v5 */}
+                <Box sx={{ mb: 2 }}>
+                    <Typography variant="subtitle1">5v5</Typography>
+                    <Box display="flex" flexWrap="wrap" gap={2}>
+                        <Box flex="1 1 200px">
+                            <NumberInput
+                                source="5v5_Cost"
+                                label="Base Cost (₹)"
+                                min={0}
+                                fullWidth
+                            />
+                        </Box>
+                        <Box flex="1 1 200px">
+                            <NumberInput
+                                source="5v5_MorningCost"
+                                label="Weekday Morning Cost (₹)"
+                                min={0}
+                                fullWidth
+                            />
+                        </Box>
+                        <Box flex="1 1 200px">
+                            <NumberInput
+                                source="5v5_WeekendCost"
+                                label="Weekend Cost (₹)"
+                                min={0}
+                                fullWidth
+                            />
+                        </Box>
+                        <Box flex="1 1 200px">
+                            <NumberInput
+                                source="5v5_WeekendMorningCost"
+                                label="Weekend Morning Cost (₹)"
+                                min={0}
+                                fullWidth
+                            />
+                        </Box>
                     </Box>
-                    <Box flex="1 1 200px">
-                        <NumberInput
-                            source="6v6_Cost"
-                            label="6v6 Cost (₹)"
-                            min={0}
-                            fullWidth
-                        />
+                </Box>
+
+                {/* 6v6 */}
+                <Box sx={{ mb: 2 }}>
+                    <Typography variant="subtitle1">6v6</Typography>
+                    <Box display="flex" flexWrap="wrap" gap={2}>
+                        <Box flex="1 1 200px">
+                            <NumberInput
+                                source="6v6_Cost"
+                                label="Base Cost (₹)"
+                                min={0}
+                                fullWidth
+                            />
+                        </Box>
+                        <Box flex="1 1 200px">
+                            <NumberInput
+                                source="6v6_MorningCost"
+                                label="Weekday Morning Cost (₹)"
+                                min={0}
+                                fullWidth
+                            />
+                        </Box>
+                        <Box flex="1 1 200px">
+                            <NumberInput
+                                source="6v6_WeekendCost"
+                                label="Weekend Cost (₹)"
+                                min={0}
+                                fullWidth
+                            />
+                        </Box>
+                        <Box flex="1 1 200px">
+                            <NumberInput
+                                source="6v6_WeekendMorningCost"
+                                label="Weekend Morning Cost (₹)"
+                                min={0}
+                                fullWidth
+                            />
+                        </Box>
                     </Box>
-                    <Box flex="1 1 200px">
-                        <NumberInput
-                            source="7v7_Cost"
-                            label="7v7 Cost (₹)"
-                            min={0}
-                            fullWidth
-                        />
+                </Box>
+
+                {/* 7v7 */}
+                <Box sx={{ mb: 2 }}>
+                    <Typography variant="subtitle1">7v7</Typography>
+                    <Box display="flex" flexWrap="wrap" gap={2}>
+                        <Box flex="1 1 200px">
+                            <NumberInput
+                                source="7v7_Cost"
+                                label="Base Cost (₹)"
+                                min={0}
+                                fullWidth
+                            />
+                        </Box>
+                        <Box flex="1 1 200px">
+                            <NumberInput
+                                source="7v7_MorningCost"
+                                label="Weekday Morning Cost (₹)"
+                                min={0}
+                                fullWidth
+                            />
+                        </Box>
+                        <Box flex="1 1 200px">
+                            <NumberInput
+                                source="7v7_WeekendCost"
+                                label="Weekend Cost (₹)"
+                                min={0}
+                                fullWidth
+                            />
+                        </Box>
+                        <Box flex="1 1 200px">
+                            <NumberInput
+                                source="7v7_WeekendMorningCost"
+                                label="Weekend Morning Cost (₹)"
+                                min={0}
+                                fullWidth
+                            />
+                        </Box>
                     </Box>
-                    <Box flex="1 1 200px">
-                        <NumberInput
-                            source="8v8_Cost"
-                            label="8v8 Cost (₹)"
-                            min={0}
-                            fullWidth
-                        />
+                </Box>
+
+                {/* 8v8 */}
+                <Box sx={{ mb: 2 }}>
+                    <Typography variant="subtitle1">8v8</Typography>
+                    <Box display="flex" flexWrap="wrap" gap={2}>
+                        <Box flex="1 1 200px">
+                            <NumberInput
+                                source="8v8_Cost"
+                                label="Base Cost (₹)"
+                                min={0}
+                                fullWidth
+                            />
+                        </Box>
+                        <Box flex="1 1 200px">
+                            <NumberInput
+                                source="8v8_MorningCost"
+                                label="Weekday Morning Cost (₹)"
+                                min={0}
+                                fullWidth
+                            />
+                        </Box>
+                        <Box flex="1 1 200px">
+                            <NumberInput
+                                source="8v8_WeekendCost"
+                                label="Weekend Cost (₹)"
+                                min={0}
+                                fullWidth
+                            />
+                        </Box>
+                        <Box flex="1 1 200px">
+                            <NumberInput
+                                source="8v8_WeekendMorningCost"
+                                label="Weekend Morning Cost (₹)"
+                                min={0}
+                                fullWidth
+                            />
+                        </Box>
                     </Box>
-                    <Box flex="1 1 200px">
-                        <NumberInput
-                            source="9v9_Cost"
-                            label="9v9 Cost (₹)"
-                            min={0}
-                            fullWidth
-                        />
+                </Box>
+
+                {/* 9v9 */}
+                <Box sx={{ mb: 2 }}>
+                    <Typography variant="subtitle1">9v9</Typography>
+                    <Box display="flex" flexWrap="wrap" gap={2}>
+                        <Box flex="1 1 200px">
+                            <NumberInput
+                                source="9v9_Cost"
+                                label="Base Cost (₹)"
+                                min={0}
+                                fullWidth
+                            />
+                        </Box>
+                        <Box flex="1 1 200px">
+                            <NumberInput
+                                source="9v9_MorningCost"
+                                label="Weekday Morning Cost (₹)"
+                                min={0}
+                                fullWidth
+                            />
+                        </Box>
+                        <Box flex="1 1 200px">
+                            <NumberInput
+                                source="9v9_WeekendCost"
+                                label="Weekend Cost (₹)"
+                                min={0}
+                                fullWidth
+                            />
+                        </Box>
+                        <Box flex="1 1 200px">
+                            <NumberInput
+                                source="9v9_WeekendMorningCost"
+                                label="Weekend Morning Cost (₹)"
+                                min={0}
+                                fullWidth
+                            />
+                        </Box>
                     </Box>
-                    <Box flex="1 1 200px">
-                        <NumberInput
-                            source="10v10_Cost"
-                            label="10v10 Cost (₹)"
-                            min={0}
-                            fullWidth
-                        />
+                </Box>
+
+                {/* 10v10 */}
+                <Box sx={{ mb: 2 }}>
+                    <Typography variant="subtitle1">10v10</Typography>
+                    <Box display="flex" flexWrap="wrap" gap={2}>
+                        <Box flex="1 1 200px">
+                            <NumberInput
+                                source="10v10_Cost"
+                                label="Base Cost (₹)"
+                                min={0}
+                                fullWidth
+                            />
+                        </Box>
+                        <Box flex="1 1 200px">
+                            <NumberInput
+                                source="10v10_MorningCost"
+                                label="Weekday Morning Cost (₹)"
+                                min={0}
+                                fullWidth
+                            />
+                        </Box>
+                        <Box flex="1 1 200px">
+                            <NumberInput
+                                source="10v10_WeekendCost"
+                                label="Weekend Cost (₹)"
+                                min={0}
+                                fullWidth
+                            />
+                        </Box>
+                        <Box flex="1 1 200px">
+                            <NumberInput
+                                source="10v10_WeekendMorningCost"
+                                label="Weekend Morning Cost (₹)"
+                                min={0}
+                                fullWidth
+                            />
+                        </Box>
                     </Box>
-                    <Box flex="1 1 200px">
-                        <NumberInput
-                            source="11v11_Cost"
-                            label="11v11 Cost (₹)"
-                            min={0}
-                            fullWidth
-                        />
+                </Box>
+
+                {/* 11v11 */}
+                <Box sx={{ mb: 2 }}>
+                    <Typography variant="subtitle1">11v11</Typography>
+                    <Box display="flex" flexWrap="wrap" gap={2}>
+                        <Box flex="1 1 200px">
+                            <NumberInput
+                                source="11v11_Cost"
+                                label="Base Cost (₹)"
+                                min={0}
+                                fullWidth
+                            />
+                        </Box>
+                        <Box flex="1 1 200px">
+                            <NumberInput
+                                source="11v11_MorningCost"
+                                label="Weekday Morning Cost (₹)"
+                                min={0}
+                                fullWidth
+                            />
+                        </Box>
+                        <Box flex="1 1 200px">
+                            <NumberInput
+                                source="11v11_WeekendCost"
+                                label="Weekend Cost (₹)"
+                                min={0}
+                                fullWidth
+                            />
+                        </Box>
+                        <Box flex="1 1 200px">
+                            <NumberInput
+                                source="11v11_WeekendMorningCost"
+                                label="Weekend Morning Cost (₹)"
+                                min={0}
+                                fullWidth
+                            />
+                        </Box>
                     </Box>
                 </Box>
 

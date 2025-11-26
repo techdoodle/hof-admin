@@ -42,7 +42,9 @@ const CustomAppBar = () => {
 
 const CustomMenu = () => {
   const { permissions } = usePermissions();
-  const canViewUsers = ['admin', 'super_admin'].includes(permissions as string);
+  const role = permissions as string;
+  const canViewUsers = ['admin', 'super_admin'].includes(role);
+  const isSuperAdmin = role === 'super_admin';
   
   return (
     <Menu>
@@ -50,6 +52,7 @@ const CustomMenu = () => {
       <Menu.ResourceItem name="matches" />
       <Menu.ResourceItem name="match-participants" />
       <Menu.ResourceItem name="venues" />
+      {isSuperAdmin && <Menu.ResourceItem name="accounting" />}
     </Menu>
   );
 };
