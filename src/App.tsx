@@ -16,6 +16,7 @@ import { VenueList, VenueEdit, VenueCreate, VenueShow } from './resources/venues
 import { VenueCsvUpload } from './resources/venues/VenueExcelUpload';
 import { MatchStatsEdit } from './resources/matchStats';
 import { AccountingDashboard } from './resources/accounting';
+import { BallonDorLeaderboard } from './resources/footballChiefLeaderboard/BallonDorLeaderboard';
 
 // Icons
 import PersonIcon from '@mui/icons-material/Person';
@@ -91,6 +92,7 @@ const App = () => (
       <Route path="/playernation/upload" element={<PlayerNationUpload />} />
       <Route path="/match-stats/:matchId/edit" element={<MatchStatsEdit />} />
       <Route path="/venues/upload-csv" element={<VenueCsvUpload />} />
+      <Route path="/ballon-dor" element={<BallonDorLeaderboard />} />
     </CustomRoutes>
 
     {/* Venue Management */}

@@ -1,7 +1,8 @@
 import React from 'react';
-import { Layout as RALayout, AppBar, Menu, UserMenu, usePermissions } from 'react-admin';
+import { Layout as RALayout, AppBar, Menu, UserMenu, usePermissions, MenuItemLink } from 'react-admin';
 import { Box, Chip, Link } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import { getCurrentEnvironment } from '../config/environment';
 
 const CustomAppBar = () => {
@@ -52,6 +53,11 @@ const CustomMenu = () => {
       <Menu.ResourceItem name="matches" />
       <Menu.ResourceItem name="match-participants" />
       <Menu.ResourceItem name="venues" />
+      <MenuItemLink
+        to="/ballon-dor"
+        primaryText="HoF Ballon d'Or"
+        leftIcon={<EmojiEventsIcon />}
+      />
       {isSuperAdmin && <Menu.ResourceItem name="accounting" />}
     </Menu>
   );
