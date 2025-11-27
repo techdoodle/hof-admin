@@ -85,7 +85,7 @@ export const MatchCreate = () => {
           <Tab label="Recurring Matches" />
         </Tabs>
         {tabValue === 0 ? (
-          <SimpleForm>
+      <SimpleForm>
         <Typography variant="h6" gutterBottom>
           Match Details
         </Typography>

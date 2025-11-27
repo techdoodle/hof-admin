@@ -262,7 +262,7 @@ const PlayerMatching: React.FC<PlayerMatchingProps> = ({ matchId, onClose }) => 
                 {externalPlayers.map((player) => {
                   const matchedPlayer = getMatchedPlayer(player.externalPlayerId);
                   return (
-                      <Card key={player.externalPlayerId} sx={{ mb: 2 }}>
+                    <Card key={player.externalPlayerId} sx={{ mb: 2 }}>
                       <CardContent>
                         <Box sx={{ mb: 2 }}>
                           {player.thumbnailUrls && player.thumbnailUrls.length > 0 ? (
@@ -270,20 +270,20 @@ const PlayerMatching: React.FC<PlayerMatchingProps> = ({ matchId, onClose }) => 
                               {player.thumbnailUrls.map((url, idx) => (
                                 <Box
                                   key={idx}
-                                  component="img"
+                              component="img"
                                   src={url}
                                   alt={`${player.externalName} - Photo ${idx + 1}`}
-                                  sx={{
+                              sx={{
                                     width: 'auto',
                                     maxWidth: { xs: 200, sm: 250 },
-                                    height: 'auto',
-                                    borderRadius: 1,
+                                height: 'auto',
+                                borderRadius: 1,
                                     objectFit: 'contain',
-                                    boxShadow: 1,
+                                boxShadow: 1,
                                     border: '1px solid',
                                     borderColor: 'divider',
-                                  }}
-                                />
+                              }}
+                            />
                               ))}
                             </Box>
                           ) : (
