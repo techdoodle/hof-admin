@@ -9,7 +9,6 @@ import {
     DateInput,
     required,
     minValue,
-    maxValue,
 } from 'react-admin';
 import { Box, Typography } from '@mui/material';
 
