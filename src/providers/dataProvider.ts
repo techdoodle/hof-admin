@@ -54,7 +54,9 @@ export const dataProvider: DataProvider = {
     try {
       const url = `/admin/${resource}/${params.id}`;
       const response = await apiClient.get(url);
-      return { data: response.data };
+      // Handle wrapped response format { success, message, data }
+      const responseData = response.data?.data || response.data;
+      return { data: responseData };
     } catch (error: any) {
       const message = error.response?.data?.message || error.message || 'An error occurred';
       throw new Error(message);
@@ -118,7 +120,9 @@ export const dataProvider: DataProvider = {
       } else {
         url = `/admin/${resource}`;
         const response = await apiClient.post(url, params.data);
-        return { data: response.data };
+        // Handle wrapped response format { success, message, data }
+        const responseData = response.data?.data || response.data;
+        return { data: responseData };
       }
     } catch (error: any) {
       const message = error.response?.data?.message || error.message || 'An error occurred';
@@ -142,7 +146,9 @@ export const dataProvider: DataProvider = {
 
       const url = `/admin/${resource}/${params.id}`;
       const response = await apiClient.patch(url, transformedData);
-      return { data: response.data };
+      // Handle wrapped response format { success, message, data }
+      const responseData = response.data?.data || response.data;
+      return { data: responseData };
     } catch (error: any) {
       const message = error.response?.data?.message || error.message || 'An error occurred';
       throw new Error(message);

@@ -59,6 +59,7 @@ const CustomMenu = () => {
         leftIcon={<EmojiEventsIcon />}
       />
       {isSuperAdmin && <Menu.ResourceItem name="accounting" />}
+      {isSuperAdmin && <Menu.ResourceItem name="promo-codes" />}
     </Menu>
   );
 };

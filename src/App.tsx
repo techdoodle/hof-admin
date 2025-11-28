@@ -17,6 +17,7 @@ import { VenueCsvUpload } from './resources/venues/VenueExcelUpload';
 import { MatchStatsEdit } from './resources/matchStats';
 import { AccountingDashboard } from './resources/accounting';
 import { BallonDorLeaderboard } from './resources/footballChiefLeaderboard/BallonDorLeaderboard';
+import { PromoCodeList, PromoCodeCreate, PromoCodeEdit, PromoCodeShow } from './resources/promo-codes';
 
 // Icons
 import PersonIcon from '@mui/icons-material/Person';
@@ -24,6 +25,7 @@ import SportsFootballIcon from '@mui/icons-material/SportsFootball';
 import GroupIcon from '@mui/icons-material/Group';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
+import LocalOfferIcon from '@mui/icons-material/LocalOffer';
 
 // Custom Layout
 import { Layout } from './layout/Layout';
@@ -112,6 +114,17 @@ const App = () => (
       list={AccountingDashboard}
       icon={AccountBalanceIcon}
       options={{ label: 'Accounting' }}
+    />
+
+    {/* Promo Codes - Super Admin only */}
+    <Resource
+      name="promo-codes"
+      list={PromoCodeList}
+      create={PromoCodeCreate}
+      edit={PromoCodeEdit}
+      show={PromoCodeShow}
+      icon={LocalOfferIcon}
+      options={{ label: 'Promo Codes' }}
     />
   </Admin>
 );
