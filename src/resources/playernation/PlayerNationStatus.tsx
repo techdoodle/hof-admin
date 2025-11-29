@@ -10,6 +10,10 @@ import {
   CircularProgress,
   Grid,
   LinearProgress,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  Paper,
 } from '@mui/material';
 import {
   CheckCircle as CheckCircleIcon,
@@ -17,6 +21,7 @@ import {
   Schedule as ScheduleIcon,
   Refresh as RefreshIcon,
   Warning as WarningIcon,
+  ExpandMore as ExpandMoreIcon,
 } from '@mui/icons-material';
 import { useDataProvider, useNotify } from 'react-admin';
 
@@ -32,6 +37,7 @@ interface StatusInfo {
   lastPollTime?: any;
   pollAttempts?: number;
   nextPollAt?: string;
+  playernationLastResponse?: any;
 }
 
 const PlayerNationStatus: React.FC<PlayerNationStatusProps> = ({ 
@@ -239,6 +245,44 @@ const PlayerNationStatus: React.FC<PlayerNationStatusProps> = ({
           <Typography variant="caption" color="text.secondary" sx={{ mt: 2, display: 'block' }}>
             Last poll: {new Date(statusInfo.lastPollTime).toLocaleString()}
           </Typography>
+        )}
+
+        {statusInfo.playernationLastResponse && (
+          <Accordion sx={{ mt: 2 }}>
+            <AccordionSummary
+              expandIcon={<ExpandMoreIcon />}
+              aria-controls="playernation-response-content"
+              id="playernation-response-header"
+            >
+              <Typography variant="subtitle2" fontWeight="medium">
+                PlayerNation Response
+              </Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <Paper
+                variant="outlined"
+                sx={{
+                  p: 2,
+                  bgcolor: 'grey.50',
+                  maxHeight: 400,
+                  overflow: 'auto',
+                }}
+              >
+                <Typography
+                  component="pre"
+                  sx={{
+                    fontFamily: 'monospace',
+                    fontSize: '0.75rem',
+                    whiteSpace: 'pre-wrap',
+                    wordBreak: 'break-word',
+                    margin: 0,
+                  }}
+                >
+                  {JSON.stringify(statusInfo.playernationLastResponse, null, 2)}
+                </Typography>
+              </Paper>
+            </AccordionDetails>
+          </Accordion>
         )}
       </CardContent>
     </Card>
