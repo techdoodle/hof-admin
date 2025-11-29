@@ -255,7 +255,7 @@ const PlayerNationStatus: React.FC<PlayerNationStatusProps> = ({
               id="playernation-response-header"
             >
               <Typography variant="subtitle2" fontWeight="medium">
-                PlayerNation Response
+                Stats Response
               </Typography>
             </AccordionSummary>
             <AccordionDetails>
