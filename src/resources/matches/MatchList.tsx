@@ -164,7 +164,7 @@ const MatchActions = ({ record }: any) => {
 
 
 export const MatchList = () => {
-    const [tab, setTab] = useState(1); // 0: Past, 1: Current, 2: Upcoming
+    const [tab, setTab] = useState(1); // 0: Past, 1: Current, 2: Upcoming, 3: Cancelled
 
     const { dateFrom, dateTo } = useMemo(() => {
         const now = new Date();
@@ -184,6 +184,13 @@ export const MatchList = () => {
             return { dateFrom: iso(from), dateTo: iso(now) };
         }
 
+        if (tab === 3) {
+            // Cancelled: last 7 days
+            const sevenDaysAgo = new Date();
+            sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+            return { dateFrom: iso(sevenDaysAgo), dateTo: iso(now) };
+        }
+
         // Upcoming: startTime > now → dateFrom = now
         return { dateFrom: iso(now), dateTo: undefined as any };
     }, [tab]);
@@ -191,16 +198,31 @@ export const MatchList = () => {
     const listFilter = useMemo(() => {
         const f: any = {};
         
-        // Always filter out matches older than 7 days
-        const sevenDaysAgo = new Date();
-        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-        f.dateFrom = dateFrom 
-            ? (new Date(dateFrom) > sevenDaysAgo ? dateFrom : sevenDaysAgo.toISOString())
-            : sevenDaysAgo.toISOString();
+        if (tab === 3) {
+            // Cancelled tab: show only CANCELLED matches from last 7 days
+            f.status = 'CANCELLED';
+            if (dateFrom) f.dateFrom = dateFrom;
+            if (dateTo) f.dateTo = dateTo;
+            return f;
+        }
+
+        // For Past, Current, and Upcoming tabs: exclude CANCELLED matches
+        f.statusNot = 'CANCELLED';
+        
+        // For Past tab: filter out matches older than 10 days
+        if (tab === 0) {
+            const tenDaysAgo = new Date();
+            tenDaysAgo.setDate(tenDaysAgo.getDate() - 10);
+            f.dateFrom = dateFrom 
+                ? (new Date(dateFrom) > tenDaysAgo ? dateFrom : tenDaysAgo.toISOString())
+                : tenDaysAgo.toISOString();
+        } else if (dateFrom) {
+            f.dateFrom = dateFrom;
+        }
         
         if (dateTo) f.dateTo = dateTo;
         return f;
-    }, [dateFrom, dateTo]);
+    }, [dateFrom, dateTo, tab]);
 
     return (
         <>
@@ -209,6 +231,7 @@ export const MatchList = () => {
                 <Tab label="Past" />
                 <Tab label="Current" />
                 <Tab label="Upcoming" />
+                <Tab label="Cancelled" />
             </Tabs>
         </Box>
         <List
