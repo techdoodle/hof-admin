@@ -18,12 +18,13 @@ import {
     SelectInput,
     ReferenceInput,
 } from 'react-admin';
-import { Button, Chip, Box, Tabs, Tab } from '@mui/material';
+import { Button, Chip, Box, Tabs, Tab, CircularProgress } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import GroupIcon from '@mui/icons-material/Group';
 import VideoCallIcon from '@mui/icons-material/VideoCall';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import CancelIcon from '@mui/icons-material/Cancel';
+import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
 import { useDataProvider, useNotify } from 'react-admin';
 import { MatchCancelDialog } from './MatchCancelDialog';
 
@@ -53,11 +54,46 @@ const matchFilters = [
 
 const MatchListActions = () => {
     const { permissions } = usePermissions();
+    const dataProvider = useDataProvider();
+    const notify = useNotify();
+    const [backfilling, setBackfilling] = useState(false);
     const canCreateMatches = ['football_chief', 'academy_admin', 'admin', 'super_admin'].includes(permissions);
+    const canBackfillHighlights = ['admin', 'super_admin'].includes(permissions);
+
+    const handleBulkBackfillHighlights = async () => {
+        if (!window.confirm('This will backfill highlights for all matches with processed stats. This may take a while. Continue?')) {
+            return;
+        }
+
+        try {
+            setBackfilling(true);
+            const response = await dataProvider.custom(`admin/playernation/backfill-highlights-all`, {
+                method: 'POST',
+            });
+            const message = `Bulk backfill completed: ${response.data.processed} matches processed, ${response.data.errors} errors out of ${response.data.totalMatches} total matches`;
+            notify(message, { type: 'success', autoHideDuration: 10000 });
+        } catch (error: any) {
+            notify(error?.message || 'Failed to backfill highlights', { type: 'error' });
+        } finally {
+            setBackfilling(false);
+        }
+    };
 
     return (
         <TopToolbar>
             {canCreateMatches && <CreateButton />}
+            {canBackfillHighlights && (
+                <Button
+                    variant="outlined"
+                    color="info"
+                    startIcon={backfilling ? <CircularProgress size={16} /> : <AutoFixHighIcon />}
+                    onClick={handleBulkBackfillHighlights}
+                    disabled={backfilling}
+                    sx={{ ml: 1 }}
+                >
+                    {backfilling ? 'Backfilling...' : 'Backfill All Highlights'}
+                </Button>
+            )}
             <FilterButton />
             <ExportButton />
         </TopToolbar>
