@@ -326,7 +326,6 @@ const PlayerMatching: React.FC<PlayerMatchingProps> = ({ matchId, onClose }) => 
                           renderOption={(props, option) => {
                             const { key, ...rest } = props as any;
                             const isAlreadyMapped = mappedInternalPlayerIds.has(option.id);
-                            const primaryText = `${option.firstName || '-'} ${option.lastName || ''}${isAlreadyMapped ? ' (already mapped)' : ''}`;
                             return (
                             <ListItem key={key} {...rest}>
                               <ListItemAvatar>
