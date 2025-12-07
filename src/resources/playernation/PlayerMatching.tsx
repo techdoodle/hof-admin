@@ -180,16 +180,11 @@ const PlayerMatching: React.FC<PlayerMatchingProps> = ({ matchId, onClose }) => 
   const handleProcessStats = async () => {
     try {
       setSaving(true);
-      // Ensure no unmapped players remain on client state
-      if (externalPlayers.length > 0) {
-        notify('Please finish matching all players before processing stats', { type: 'warning' });
-        setSaving(false);
-        return;
-      }
+      // Process stats for all mapped players (unmapped players will be skipped)
       await dataProvider.custom(`admin/playernation/process-stats/${matchId}`, {
         method: 'POST',
       });
-      notify('Stats processed successfully', { type: 'success' });
+      notify('Stats processed successfully for all mapped players', { type: 'success' });
       onClose && onClose();
     } catch (e: any) {
       notify(e?.message || 'Failed to process stats', { type: 'error' });
@@ -202,12 +197,7 @@ const PlayerMatching: React.FC<PlayerMatchingProps> = ({ matchId, onClose }) => 
   const mappedInternalPlayerIds = new Set(Array.from(mappings.values()));
 
   const filteredInternalPlayers = internalPlayers.filter(player => {
-    // Exclude already mapped players from dropdown
-    if (mappedInternalPlayerIds.has(player.id)) {
-      return false;
-    }
-    
-    // Apply search filter
+    // Show all players, only apply search filter
     const first = (player.firstName || '').toString();
     const last = (player.lastName || '').toString();
     const phoneRaw = (player.phoneNumber || '').toString();
@@ -335,6 +325,7 @@ const PlayerMatching: React.FC<PlayerMatchingProps> = ({ matchId, onClose }) => 
                           )}
                           renderOption={(props, option) => {
                             const { key, ...rest } = props as any;
+                            const isAlreadyMapped = mappedInternalPlayerIds.has(option.id);
                             return (
                             <ListItem key={key} {...rest}>
                               <ListItemAvatar>
@@ -343,7 +334,16 @@ const PlayerMatching: React.FC<PlayerMatchingProps> = ({ matchId, onClose }) => 
                                 </Avatar>
                               </ListItemAvatar>
                               <ListItemText
-                                primary={`${option.firstName || '-'} ${option.lastName || ''}`}
+                                primary={
+                                  <Box component="span">
+                                    {option.firstName || '-'} {option.lastName || ''}
+                                    {isAlreadyMapped && (
+                                      <Box component="span" sx={{ color: 'text.secondary', fontStyle: 'italic', ml: 0.5 }}>
+                                        (already mapped)
+                                      </Box>
+                                    )}
+                                  </Box>
+                                }
                                 secondary={`${option.phoneNumber || '-'} ${option.jerseyNumber ? `#${option.jerseyNumber}` : ''}`}
                               />
                             </ListItem>
