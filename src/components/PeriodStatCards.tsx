@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useMemo } from 'react';
 import { Card, CardContent, Typography, Box, CircularProgress, Grid } from '@mui/material';
+import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '../utils/apiClient';
 
 interface PeriodStats {
   usersAdded: number;
   matchesCompleted: number;
   matchesCancelled: number;
-  loading: boolean;
 }
 
 interface ApiResponse {
@@ -14,21 +14,6 @@ interface ApiResponse {
   data?: any[];
   total: number;
 }
-
-export const PeriodStatCards: React.FC = () => {
-  const [thisWeekStats, setThisWeekStats] = useState<PeriodStats>({
-    usersAdded: 0,
-    matchesCompleted: 0,
-    matchesCancelled: 0,
-    loading: true,
-  });
-
-  const [thisMonthStats, setThisMonthStats] = useState<PeriodStats>({
-    usersAdded: 0,
-    matchesCompleted: 0,
-    matchesCancelled: 0,
-    loading: true,
-  });
 
   // Calculate This Week (Monday to Sunday)
   const getThisWeekRange = () => {
@@ -54,13 +39,16 @@ export const PeriodStatCards: React.FC = () => {
     return { from: firstDay, to: lastDay };
   };
 
-  const fetchPeriodStats = async (dateFrom: Date, dateTo: Date, setStats: React.Dispatch<React.SetStateAction<PeriodStats>>) => {
-    setStats(prev => ({ ...prev, loading: true }));
+  const thisWeek = useMemo(() => getThisWeekRange(), []);
+  const thisMonth = useMemo(() => getThisMonthRange(), []);
 
-    try {
+  // Fetch This Week stats with caching
+  const { data: thisWeekStats, isLoading: thisWeekLoading } = useQuery<PeriodStats>({
+    queryKey: ['periodStats', 'week', thisWeek.from.toISOString().split('T')[0], thisWeek.to.toISOString().split('T')[0]],
+    queryFn: async () => {
       const params = new URLSearchParams();
-      params.append('dateFrom', dateFrom.toISOString().split('T')[0]);
-      params.append('dateTo', dateTo.toISOString().split('T')[0]);
+      params.append('dateFrom', thisWeek.from.toISOString().split('T')[0]);
+      params.append('dateTo', thisWeek.to.toISOString().split('T')[0]);
 
       const [usersResponse, completedResponse, cancelledResponse] = await Promise.all([
         apiClient.get<ApiResponse>(`/admin/analytics/users-added?${params.toString()}&groupBy=monthly`),
@@ -68,37 +56,53 @@ export const PeriodStatCards: React.FC = () => {
         apiClient.get<ApiResponse>(`/admin/analytics/matches-cancelled?${params.toString()}&groupBy=monthly`),
       ]);
 
-      setStats({
+      return {
         usersAdded: usersResponse.data.total || 0,
         matchesCompleted: completedResponse.data.total || 0,
         matchesCancelled: cancelledResponse.data.total || 0,
-        loading: false,
-      });
-    } catch (error) {
-      console.error('Failed to fetch period stats:', error);
-      setStats(prev => ({ ...prev, loading: false }));
-    }
-  };
+      };
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes - analytics don't change frequently
+    gcTime: 10 * 60 * 1000, // 10 minutes cache time
+    retry: 1,
+  });
 
-  useEffect(() => {
-    const thisWeek = getThisWeekRange();
-    const thisMonth = getThisMonthRange();
+  // Fetch This Month stats with caching
+  const { data: thisMonthStats, isLoading: thisMonthLoading } = useQuery<PeriodStats>({
+    queryKey: ['periodStats', 'month', thisMonth.from.toISOString().split('T')[0], thisMonth.to.toISOString().split('T')[0]],
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      params.append('dateFrom', thisMonth.from.toISOString().split('T')[0]);
+      params.append('dateTo', thisMonth.to.toISOString().split('T')[0]);
 
-    fetchPeriodStats(thisWeek.from, thisWeek.to, setThisWeekStats);
-    fetchPeriodStats(thisMonth.from, thisMonth.to, setThisMonthStats);
-  }, []);
+      const [usersResponse, completedResponse, cancelledResponse] = await Promise.all([
+        apiClient.get<ApiResponse>(`/admin/analytics/users-added?${params.toString()}&groupBy=monthly`),
+        apiClient.get<ApiResponse>(`/admin/analytics/matches-completed?${params.toString()}&groupBy=monthly`),
+        apiClient.get<ApiResponse>(`/admin/analytics/matches-cancelled?${params.toString()}&groupBy=monthly`),
+      ]);
 
-  const StatCard = ({ title, stats }: { title: string; stats: PeriodStats }) => (
+      return {
+        usersAdded: usersResponse.data.total || 0,
+        matchesCompleted: completedResponse.data.total || 0,
+        matchesCancelled: cancelledResponse.data.total || 0,
+      };
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes - analytics don't change frequently
+    gcTime: 10 * 60 * 1000, // 10 minutes cache time
+    retry: 1,
+  });
+
+  const StatCard = ({ title, stats, loading }: { title: string; stats?: PeriodStats; loading: boolean }) => (
     <Card>
       <CardContent>
         <Typography variant="h6" gutterBottom color="textSecondary">
           {title}
         </Typography>
-        {stats.loading ? (
+        {loading ? (
           <Box display="flex" justifyContent="center" p={2}>
             <CircularProgress size={24} />
           </Box>
-        ) : (
+        ) : stats ? (
           <Box>
             <Box mb={2}>
               <Typography variant="body2" color="textSecondary">
@@ -125,7 +129,7 @@ export const PeriodStatCards: React.FC = () => {
               </Typography>
             </Box>
           </Box>
-        )}
+        ) : null}
       </CardContent>
     </Card>
   );
@@ -133,10 +137,10 @@ export const PeriodStatCards: React.FC = () => {
   return (
     <Grid container spacing={3} sx={{ mb: 4 }}>
       <Grid item xs={12} md={6}>
-        <StatCard title="This Week" stats={thisWeekStats} />
+        <StatCard title="This Week" stats={thisWeekStats} loading={thisWeekLoading} />
       </Grid>
       <Grid item xs={12} md={6}>
-        <StatCard title="This Month" stats={thisMonthStats} />
+        <StatCard title="This Month" stats={thisMonthStats} loading={thisMonthLoading} />
       </Grid>
     </Grid>
   );

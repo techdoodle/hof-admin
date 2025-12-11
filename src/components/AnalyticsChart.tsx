@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useMemo } from 'react';
 import {
   Card,
   CardContent,
@@ -16,6 +16,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from 'recharts';
+import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '../utils/apiClient';
 
 interface AnalyticsChartProps {
@@ -40,20 +41,14 @@ export const AnalyticsChart: React.FC<AnalyticsChartProps> = ({
   endpoint,
   groupBy,
 }) => {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [data, setData] = useState<DataPoint[]>([]);
-  const [dateFrom, setDateFrom] = useState<Date | null>(null);
-  const [dateTo, setDateTo] = useState<Date | null>(null);
-
   // Calculate date range based on groupBy
-  const calculateDateRange = useCallback((group: 'daily' | 'weekly' | 'monthly') => {
+  const dateRange = useMemo(() => {
     const today = new Date();
     today.setHours(23, 59, 59, 999); // End of today
 
     let from: Date;
 
-    switch (group) {
+    switch (groupBy) {
       case 'daily':
         // Last 7 days (including today)
         from = new Date(today);
@@ -79,52 +74,27 @@ export const AnalyticsChart: React.FC<AnalyticsChartProps> = ({
     }
 
     return { from, to: today };
-  }, []);
+  }, [groupBy]);
 
-  // Update date range when groupBy changes
-  useEffect(() => {
-    const { from, to } = calculateDateRange(groupBy);
-    setDateFrom(from);
-    setDateTo(to);
-  }, [groupBy, calculateDateRange]);
+  // Fetch data with caching using React Query
+  const { data, isLoading: loading, error } = useQuery<DataPoint[]>({
+    queryKey: ['analytics', endpoint, groupBy, dateRange.from.toISOString().split('T')[0], dateRange.to.toISOString().split('T')[0]],
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      params.append('dateFrom', dateRange.from.toISOString().split('T')[0]);
+      params.append('dateTo', dateRange.to.toISOString().split('T')[0]);
+      params.append('groupBy', groupBy);
 
-  const fetchData = useCallback(
-    async (from: Date | null, to: Date | null, group: 'daily' | 'weekly' | 'monthly') => {
-      if (!from || !to) return;
+      const response = await apiClient.get<ApiResponse>(
+        `${endpoint}?${params.toString()}`
+      );
 
-      setLoading(true);
-      setError(null);
-
-      try {
-        const params = new URLSearchParams();
-        params.append('dateFrom', from.toISOString().split('T')[0]);
-        params.append('dateTo', to.toISOString().split('T')[0]);
-        params.append('groupBy', group);
-
-        const response = await apiClient.get<ApiResponse>(
-          `${endpoint}?${params.toString()}`
-        );
-
-        const responseData = response.data;
-        setData(responseData.data || []);
-      } catch (err: any) {
-        setError(
-          err.response?.data?.message || err.message || 'Failed to fetch analytics data'
-        );
-        setData([]);
-      } finally {
-        setLoading(false);
-      }
+      return response.data.data || [];
     },
-    [endpoint]
-  );
-
-  // Fetch data when date range or groupBy changes
-  useEffect(() => {
-    if (dateFrom && dateTo) {
-      fetchData(dateFrom, dateTo, groupBy);
-    }
-  }, [dateFrom, dateTo, groupBy, fetchData]);
+    staleTime: 5 * 60 * 1000, // 5 minutes - analytics don't change frequently
+    gcTime: 10 * 60 * 1000, // 10 minutes cache time
+    retry: 1,
+  });
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -157,7 +127,7 @@ export const AnalyticsChart: React.FC<AnalyticsChartProps> = ({
 
         {error && (
           <Alert severity="error" sx={{ mb: 2 }}>
-            {error}
+            {error instanceof Error ? error.message : 'Failed to fetch analytics data'}
           </Alert>
         )}
 
