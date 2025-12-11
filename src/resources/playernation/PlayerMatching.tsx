@@ -242,7 +242,13 @@ const PlayerMatching: React.FC<PlayerMatchingProps> = ({ matchId, onClose }) => 
             All players have been successfully matched!
           </Alert>
         ) : (
-          <Grid container spacing={3}>
+          <>
+            {mappings.size > 0 && mappings.size < externalPlayers.length && (
+              <Alert severity="info" sx={{ mb: 2 }}>
+                {mappings.size} of {externalPlayers.length} players are mapped. You can process stats for mapped players now, or continue mapping remaining players.
+              </Alert>
+            )}
+            <Grid container spacing={3}>
               {/* External Players (Stats System) */}
             <Grid item xs={12} md={6}>
               <Typography variant="h6" gutterBottom>
@@ -410,6 +416,7 @@ const PlayerMatching: React.FC<PlayerMatchingProps> = ({ matchId, onClose }) => 
               </List>
             </Grid>
           </Grid>
+          </>
         )}
       </DialogContent>
       
@@ -417,24 +424,26 @@ const PlayerMatching: React.FC<PlayerMatchingProps> = ({ matchId, onClose }) => 
         <Button onClick={onClose}>
           Close
         </Button>
-        {externalPlayers.length > 0 && (
+        {externalPlayers.length > 0 && mappings.size > 0 && (
           <Button
             variant="contained"
             onClick={handleSaveMappings}
-            disabled={saving || mappings.size === 0}
+            disabled={saving}
             startIcon={saving ? <CircularProgress size={16} /> : <CheckIcon />}
           >
             {saving ? 'Saving...' : `Save ${mappings.size} Mappings`}
           </Button>
         )}
-        {externalPlayers.length === 0 && (
+        {(mappings.size > 0 || externalPlayers.length === 0) && (
           <Button
             variant="contained"
             color="primary"
             onClick={handleProcessStats}
             disabled={saving}
           >
-            {saving ? 'Processing...' : 'Process Stats'}
+            {saving ? 'Processing...' : externalPlayers.length > 0 && externalPlayers.length > mappings.size 
+              ? `Process Stats (${mappings.size} mapped)` 
+              : 'Process Stats'}
           </Button>
         )}
       </DialogActions>
