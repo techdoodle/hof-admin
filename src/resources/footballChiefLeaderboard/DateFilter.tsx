@@ -7,10 +7,10 @@ interface DateFilterProps {
   currentFilter?: { from: Date | null; to: Date | null } | null;
 }
 
-type FilterType = 'day' | 'week' | 'month' | 'custom';
+type FilterType = 'week' | 'month' | 'custom';
 
 export const DateFilter: React.FC<DateFilterProps> = ({ onFilterChange, loading = false, currentFilter }) => {
-  const [filterType, setFilterType] = useState<FilterType>('day');
+  const [filterType, setFilterType] = useState<FilterType>('month');
   const [customDateFrom, setCustomDateFrom] = useState<string>('');
   const [customDateTo, setCustomDateTo] = useState<string>('');
 
@@ -23,47 +23,47 @@ export const DateFilter: React.FC<DateFilterProps> = ({ onFilterChange, loading 
         return d;
       };
 
+      // Compare dates (ignore time for comparison)
+      const compareDateOnly = (d1: Date, d2: Date) => {
+        return d1.getFullYear() === d2.getFullYear() &&
+               d1.getMonth() === d2.getMonth() &&
+               d1.getDate() === d2.getDate();
+      };
+
       const now = new Date();
       const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
       
       const filterFrom = normalizeDate(currentFilter.from);
       const filterTo = normalizeDate(currentFilter.to);
       
-      // Check if it's today (daily)
-      if (
-        filterFrom.getTime() === today.getTime() &&
-        filterTo.getTime() === today.getTime()
-      ) {
-        setFilterType('day');
-        return;
-      }
-
       // Check if it's current month
       const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+      firstDayOfMonth.setHours(0, 0, 0, 0);
       const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-      const normalizedFirstDay = normalizeDate(firstDayOfMonth);
-      const normalizedLastDay = normalizeDate(lastDayOfMonth);
+      lastDayOfMonth.setHours(23, 59, 59, 999);
       
       if (
-        filterFrom.getTime() === normalizedFirstDay.getTime() &&
-        filterTo.getTime() === normalizedLastDay.getTime()
+        compareDateOnly(filterFrom, firstDayOfMonth) &&
+        compareDateOnly(filterTo, lastDayOfMonth)
       ) {
         setFilterType('month');
         return;
       }
 
-      // Check if it's current week
+      // Check if it's current week (Monday to Sunday)
       const dayOfWeek = today.getDay();
+      // Convert Sunday (0) to 7 for easier calculation
+      const dayOffset = dayOfWeek === 0 ? 7 : dayOfWeek;
       const firstDayOfWeek = new Date(today);
-      firstDayOfWeek.setDate(today.getDate() - dayOfWeek);
+      firstDayOfWeek.setDate(today.getDate() - (dayOffset - 1)); // Monday
+      firstDayOfWeek.setHours(0, 0, 0, 0);
       const lastDayOfWeek = new Date(firstDayOfWeek);
-      lastDayOfWeek.setDate(firstDayOfWeek.getDate() + 6);
-      const normalizedFirstDayWeek = normalizeDate(firstDayOfWeek);
-      const normalizedLastDayWeek = normalizeDate(lastDayOfWeek);
+      lastDayOfWeek.setDate(firstDayOfWeek.getDate() + 6); // Sunday
+      lastDayOfWeek.setHours(23, 59, 59, 999); // End of Sunday
       
       if (
-        filterFrom.getTime() === normalizedFirstDayWeek.getTime() &&
-        filterTo.getTime() === normalizedLastDayWeek.getTime()
+        compareDateOnly(filterFrom, firstDayOfWeek) &&
+        compareDateOnly(filterTo, lastDayOfWeek)
       ) {
         setFilterType('week');
         return;
@@ -81,25 +81,32 @@ export const DateFilter: React.FC<DateFilterProps> = ({ onFilterChange, loading 
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
     switch (type) {
-      case 'day': {
-        return { from: today, to: today };
-      }
       case 'month': {
+        // Current month: first day to last day
         const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+        firstDay.setHours(0, 0, 0, 0);
         const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+        lastDay.setHours(23, 59, 59, 999);
         return { from: firstDay, to: lastDay };
       }
       case 'week': {
+        // Current week: Monday to Sunday (end of Sunday)
         const dayOfWeek = today.getDay();
+        // Convert Sunday (0) to 7 for easier calculation
+        const dayOffset = dayOfWeek === 0 ? 7 : dayOfWeek;
         const firstDayOfWeek = new Date(today);
-        firstDayOfWeek.setDate(today.getDate() - dayOfWeek);
+        firstDayOfWeek.setDate(today.getDate() - (dayOffset - 1)); // Monday
+        firstDayOfWeek.setHours(0, 0, 0, 0);
         const lastDayOfWeek = new Date(firstDayOfWeek);
-        lastDayOfWeek.setDate(firstDayOfWeek.getDate() + 6);
+        lastDayOfWeek.setDate(firstDayOfWeek.getDate() + 6); // Sunday
+        lastDayOfWeek.setHours(23, 59, 59, 999); // End of Sunday
         return { from: firstDayOfWeek, to: lastDayOfWeek };
       }
       default: {
         const from = customDateFrom ? new Date(customDateFrom) : today;
+        from.setHours(0, 0, 0, 0);
         const to = customDateTo ? new Date(customDateTo) : today;
+        to.setHours(23, 59, 59, 999);
         return { from, to };
       }
     }
@@ -136,7 +143,6 @@ export const DateFilter: React.FC<DateFilterProps> = ({ onFilterChange, loading 
           },
         }}
       >
-        <Tab label="Daily" value="day" />
         <Tab label="This Week" value="week" />
         <Tab label="This Month" value="month" />
         <Tab label="Custom Range" value="custom" />

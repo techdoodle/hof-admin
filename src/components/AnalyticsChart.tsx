@@ -45,18 +45,21 @@ export const AnalyticsChart: React.FC<AnalyticsChartProps> = ({
   const [total, setTotal] = useState<number>(0);
   const [dateFrom, setDateFrom] = useState<Date | null>(null);
   const [dateTo, setDateTo] = useState<Date | null>(null);
-  const [groupBy, setGroupBy] = useState<'daily' | 'weekly' | 'monthly'>('daily');
+  const [groupBy, setGroupBy] = useState<'weekly' | 'monthly'>('monthly');
 
-  // Initialize with today's date (daily view)
+  // Initialize with current month
   useEffect(() => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    setDateFrom(today);
-    setDateTo(today);
+    const now = new Date();
+    const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    firstDayOfMonth.setHours(0, 0, 0, 0);
+    const lastDayOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+    lastDayOfMonth.setHours(23, 59, 59, 999);
+    setDateFrom(firstDayOfMonth);
+    setDateTo(lastDayOfMonth);
   }, []);
 
   const fetchData = useCallback(
-    async (from: Date | null, to: Date | null, group: 'daily' | 'weekly' | 'monthly') => {
+    async (from: Date | null, to: Date | null, group: 'weekly' | 'monthly') => {
       if (!from || !to) return;
 
       setLoading(true);
@@ -104,13 +107,9 @@ export const AnalyticsChart: React.FC<AnalyticsChartProps> = ({
       const diffTime = Math.abs(to.getTime() - from.getTime());
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; // +1 to include both start and end days
       
-      if (diffDays <= 1) {
-        setGroupBy('daily');
-      } else if (diffDays <= 7) {
-        setGroupBy('daily');
-      } else if (diffDays <= 31) {
-        setGroupBy('daily');
-      } else if (diffDays <= 90) {
+      // If range is <= 7 days (a week), use weekly grouping
+      // Otherwise use monthly grouping
+      if (diffDays <= 7) {
         setGroupBy('weekly');
       } else {
         setGroupBy('monthly');
@@ -120,9 +119,7 @@ export const AnalyticsChart: React.FC<AnalyticsChartProps> = ({
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    if (groupBy === 'daily') {
-      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-    } else if (groupBy === 'weekly') {
+    if (groupBy === 'weekly') {
       return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
     } else {
       return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
@@ -132,14 +129,16 @@ export const AnalyticsChart: React.FC<AnalyticsChartProps> = ({
   return (
     <Card>
       <CardContent>
-        <Typography variant="h6" gutterBottom>
-          {title}
-        </Typography>
-        {total > 0 && (
-          <Typography variant="body2" color="textSecondary" sx={{ mb: 2 }}>
-            Total: {total.toLocaleString()}
+        <Box display="flex" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
+          <Typography variant="h6">
+            {title}
           </Typography>
-        )}
+          {total > 0 && (
+            <Typography variant="h6" color="primary" sx={{ fontWeight: 600 }}>
+              Total: {total.toLocaleString()}
+            </Typography>
+          )}
+        </Box>
 
         <DateFilter
           onFilterChange={handleDateFilterChange}

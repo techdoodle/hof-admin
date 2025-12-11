@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, Typography, Box, CircularProgress } from '@mui/material';
-import { usePermissions, useGetList } from 'react-admin';
+import { usePermissions } from 'react-admin';
 import { useNavigate } from 'react-router-dom';
 import PersonIcon from '@mui/icons-material/Person';
 import SportsFootballIcon from '@mui/icons-material/SportsFootball';
 import GroupIcon from '@mui/icons-material/Group';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import { AnalyticsChart } from '../components/AnalyticsChart';
+import { apiClient } from '../utils/apiClient';
 
 const StatCard = ({ title, value, icon, color }: any) => (
     <Card>
@@ -39,40 +40,27 @@ export const Dashboard = () => {
         loading: true
     });
 
-    const { data: users, total: totalUsers } = useGetList('users', {
-        pagination: { page: 1, perPage: 1 },
-        sort: { field: 'id', order: 'DESC' }
-    });
-
-    const { data: matches } = useGetList('matches', {
-        pagination: { page: 1, perPage: 1000 },
-        sort: { field: 'startTime', order: 'DESC' }
-    });
-
-    const { data: participants, total: totalParticipants } = useGetList('match-participants', {
-        pagination: { page: 1, perPage: 1 },
-        sort: { field: 'id', order: 'DESC' }
-    });
-
+    // Fetch dashboard stats from optimized endpoint
     useEffect(() => {
-        if (users && matches && participants) {
-            const now = new Date();
-            const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+        const fetchStats = async () => {
+            try {
+                const response = await apiClient.get('/admin/dashboard/stats');
+                const data = response.data?.data || response.data;
+                setStats({
+                    totalUsers: data.totalUsers || 0,
+                    activeMatches: data.monthlyMatches || 0,
+                    totalParticipants: data.totalParticipants || 0,
+                    monthlyMatches: data.monthlyMatches || 0,
+                    loading: false
+                });
+            } catch (error) {
+                console.error('Failed to fetch dashboard stats:', error);
+                setStats(prev => ({ ...prev, loading: false }));
+            }
+        };
 
-            const activeMatches = matches.filter((match: any) => {
-                const matchDate = new Date(match.startTime);
-                return matchDate >= monthStart;
-            });
-
-            setStats({
-                totalUsers: totalUsers || 0,
-                activeMatches: activeMatches.length,
-                totalParticipants: totalParticipants || 0,
-                monthlyMatches: activeMatches.length,
-                loading: false
-            });
-        }
-    }, [users, matches, participants, totalUsers, totalParticipants]);
+        fetchStats();
+    }, []);
 
     const canViewUsers = ['admin', 'super_admin'].includes(permissions);
     const canViewMatches = ['football_chief', 'academy_admin', 'admin', 'super_admin'].includes(permissions);
