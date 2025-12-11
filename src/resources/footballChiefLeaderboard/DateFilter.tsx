@@ -7,10 +7,10 @@ interface DateFilterProps {
   currentFilter?: { from: Date | null; to: Date | null } | null;
 }
 
-type FilterType = 'month' | 'week' | 'custom';
+type FilterType = 'day' | 'week' | 'month' | 'custom';
 
 export const DateFilter: React.FC<DateFilterProps> = ({ onFilterChange, loading = false, currentFilter }) => {
-  const [filterType, setFilterType] = useState<FilterType>('month');
+  const [filterType, setFilterType] = useState<FilterType>('day');
   const [customDateFrom, setCustomDateFrom] = useState<string>('');
   const [customDateTo, setCustomDateTo] = useState<string>('');
 
@@ -29,6 +29,15 @@ export const DateFilter: React.FC<DateFilterProps> = ({ onFilterChange, loading 
       const filterFrom = normalizeDate(currentFilter.from);
       const filterTo = normalizeDate(currentFilter.to);
       
+      // Check if it's today (daily)
+      if (
+        filterFrom.getTime() === today.getTime() &&
+        filterTo.getTime() === today.getTime()
+      ) {
+        setFilterType('day');
+        return;
+      }
+
       // Check if it's current month
       const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
       const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
@@ -72,6 +81,9 @@ export const DateFilter: React.FC<DateFilterProps> = ({ onFilterChange, loading 
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
     switch (type) {
+      case 'day': {
+        return { from: today, to: today };
+      }
       case 'month': {
         const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
         const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
@@ -124,8 +136,9 @@ export const DateFilter: React.FC<DateFilterProps> = ({ onFilterChange, loading 
           },
         }}
       >
-        <Tab label="This Month" value="month" />
+        <Tab label="Daily" value="day" />
         <Tab label="This Week" value="week" />
+        <Tab label="This Month" value="month" />
         <Tab label="Custom Range" value="custom" />
       </Tabs>
 

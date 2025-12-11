@@ -6,6 +6,7 @@ import PersonIcon from '@mui/icons-material/Person';
 import SportsFootballIcon from '@mui/icons-material/SportsFootball';
 import GroupIcon from '@mui/icons-material/Group';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import { AnalyticsChart } from '../components/AnalyticsChart';
 
 const StatCard = ({ title, value, icon, color }: any) => (
     <Card>
@@ -75,6 +76,7 @@ export const Dashboard = () => {
 
     const canViewUsers = ['admin', 'super_admin'].includes(permissions);
     const canViewMatches = ['football_chief', 'academy_admin', 'admin', 'super_admin'].includes(permissions);
+    const isSuperAdmin = permissions === 'super_admin';
 
     return (
         <Box p={3}>
@@ -212,6 +214,29 @@ export const Dashboard = () => {
                     </Card>
                 </Box>
             </Box>
+
+            {/* Analytics Section - Super Admin Only */}
+            {isSuperAdmin && (
+                <Box sx={{ mt: 4 }}>
+                    <Typography variant="h5" gutterBottom sx={{ mb: 3 }}>
+                        Analytics Trends
+                    </Typography>
+                    <Box display="flex" flexDirection="column" gap={3}>
+                        <AnalyticsChart
+                            title="Users Added"
+                            endpoint="/admin/analytics/users-added"
+                        />
+                        <AnalyticsChart
+                            title="Matches Completed"
+                            endpoint="/admin/analytics/matches-completed"
+                        />
+                        <AnalyticsChart
+                            title="Matches Cancelled"
+                            endpoint="/admin/analytics/matches-cancelled"
+                        />
+                    </Box>
+                </Box>
+            )}
         </Box>
     );
 };
