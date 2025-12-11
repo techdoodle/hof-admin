@@ -5,8 +5,10 @@ import { useNavigate } from 'react-router-dom';
 import PersonIcon from '@mui/icons-material/Person';
 import SportsFootballIcon from '@mui/icons-material/SportsFootball';
 import GroupIcon from '@mui/icons-material/Group';
-import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import EventIcon from '@mui/icons-material/Event';
 import { AnalyticsChart } from '../components/AnalyticsChart';
+import { PeriodStatCards } from '../components/PeriodStatCards';
+import { AnalyticsFilter } from '../components/AnalyticsFilter';
 import { apiClient } from '../utils/apiClient';
 
 const StatCard = ({ title, value, icon, color }: any) => (
@@ -36,9 +38,10 @@ export const Dashboard = () => {
         totalUsers: 0,
         activeMatches: 0,
         totalParticipants: 0,
-        monthlyMatches: 0,
+        futureMatches: 0,
         loading: true
     });
+    const [groupBy, setGroupBy] = useState<'daily' | 'weekly' | 'monthly'>('monthly');
 
     // Fetch dashboard stats from optimized endpoint
     useEffect(() => {
@@ -50,7 +53,7 @@ export const Dashboard = () => {
                     totalUsers: data.totalUsers || 0,
                     activeMatches: data.monthlyMatches || 0,
                     totalParticipants: data.totalParticipants || 0,
-                    monthlyMatches: data.monthlyMatches || 0,
+                    futureMatches: data.futureMatches || 0,
                     loading: false
                 });
             } catch (error) {
@@ -64,7 +67,7 @@ export const Dashboard = () => {
 
     const canViewUsers = ['admin', 'super_admin'].includes(permissions);
     const canViewMatches = ['football_chief', 'academy_admin', 'admin', 'super_admin'].includes(permissions);
-    const isSuperAdmin = permissions === 'super_admin';
+    const canViewAnalytics = ['admin', 'super_admin'].includes(permissions);
 
     return (
         <Box p={3}>
@@ -120,9 +123,9 @@ export const Dashboard = () => {
 
                         <Box flex="1 1 250px">
                             <StatCard
-                                title="This Month"
-                                value={stats.loading ? <CircularProgress size={20} /> : stats.monthlyMatches.toLocaleString()}
-                                icon={<TrendingUpIcon sx={{ fontSize: 40 }} />}
+                                title="Future Matches"
+                                value={stats.loading ? <CircularProgress size={20} /> : stats.futureMatches.toLocaleString()}
+                                icon={<EventIcon sx={{ fontSize: 40 }} />}
                                 color="#9c27b0"
                             />
                         </Box>
@@ -203,25 +206,39 @@ export const Dashboard = () => {
                 </Box>
             </Box>
 
-            {/* Analytics Section - Super Admin Only */}
-            {isSuperAdmin && (
+            {/* Analytics Section - Admin & Super Admin Only */}
+            {canViewAnalytics && (
                 <Box sx={{ mt: 4 }}>
                     <Typography variant="h5" gutterBottom sx={{ mb: 3 }}>
                         Analytics Trends
                     </Typography>
-                    <Box display="flex" flexDirection="column" gap={3}>
-                        <AnalyticsChart
-                            title="Users Added"
-                            endpoint="/admin/analytics/users-added"
+                    
+                    {/* Period Stat Cards */}
+                    <PeriodStatCards />
+
+                    {/* Charts Section with Shared Filter */}
+                    <Box>
+                        <AnalyticsFilter
+                            groupBy={groupBy}
+                            onGroupByChange={setGroupBy}
                         />
-                        <AnalyticsChart
-                            title="Matches Completed"
-                            endpoint="/admin/analytics/matches-completed"
-                        />
-                        <AnalyticsChart
-                            title="Matches Cancelled"
-                            endpoint="/admin/analytics/matches-cancelled"
-                        />
+                        <Box display="flex" flexDirection="column" gap={3}>
+                            <AnalyticsChart
+                                title="Users Added"
+                                endpoint="/admin/analytics/users-added"
+                                groupBy={groupBy}
+                            />
+                            <AnalyticsChart
+                                title="Matches Completed"
+                                endpoint="/admin/analytics/matches-completed"
+                                groupBy={groupBy}
+                            />
+                            <AnalyticsChart
+                                title="Matches Cancelled"
+                                endpoint="/admin/analytics/matches-cancelled"
+                                groupBy={groupBy}
+                            />
+                        </Box>
                     </Box>
                 </Box>
             )}
