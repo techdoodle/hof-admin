@@ -16,12 +16,12 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from 'recharts';
-import { DateFilter } from '../resources/footballChiefLeaderboard/DateFilter';
 import { apiClient } from '../utils/apiClient';
 
 interface AnalyticsChartProps {
   title: string;
   endpoint: string;
+  groupBy: 'daily' | 'weekly' | 'monthly';
 }
 
 interface DataPoint {
@@ -38,28 +38,58 @@ interface ApiResponse {
 export const AnalyticsChart: React.FC<AnalyticsChartProps> = ({
   title,
   endpoint,
+  groupBy,
 }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<DataPoint[]>([]);
-  const [total, setTotal] = useState<number>(0);
   const [dateFrom, setDateFrom] = useState<Date | null>(null);
   const [dateTo, setDateTo] = useState<Date | null>(null);
-  const [groupBy, setGroupBy] = useState<'weekly' | 'monthly'>('monthly');
 
-  // Initialize with current month
-  useEffect(() => {
-    const now = new Date();
-    const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    firstDayOfMonth.setHours(0, 0, 0, 0);
-    const lastDayOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-    lastDayOfMonth.setHours(23, 59, 59, 999);
-    setDateFrom(firstDayOfMonth);
-    setDateTo(lastDayOfMonth);
+  // Calculate date range based on groupBy
+  const calculateDateRange = useCallback((group: 'daily' | 'weekly' | 'monthly') => {
+    const today = new Date();
+    today.setHours(23, 59, 59, 999); // End of today
+
+    let from: Date;
+
+    switch (group) {
+      case 'daily':
+        // Last 7 days (including today)
+        from = new Date(today);
+        from.setDate(today.getDate() - 6);
+        from.setHours(0, 0, 0, 0);
+        break;
+      case 'weekly':
+        // Last 7 weeks (go back 6 weeks from current week)
+        const dayOfWeek = today.getDay();
+        const dayOffset = dayOfWeek === 0 ? 7 : dayOfWeek;
+        const currentWeekMonday = new Date(today);
+        currentWeekMonday.setDate(today.getDate() - (dayOffset - 1));
+        currentWeekMonday.setHours(0, 0, 0, 0);
+        from = new Date(currentWeekMonday);
+        from.setDate(currentWeekMonday.getDate() - (6 * 7)); // 6 weeks back (42 days)
+        from.setHours(0, 0, 0, 0);
+        break;
+      case 'monthly':
+        // Last 4 months (go back 3 months from current month)
+        from = new Date(today.getFullYear(), today.getMonth() - 3, 1);
+        from.setHours(0, 0, 0, 0);
+        break;
+    }
+
+    return { from, to: today };
   }, []);
 
+  // Update date range when groupBy changes
+  useEffect(() => {
+    const { from, to } = calculateDateRange(groupBy);
+    setDateFrom(from);
+    setDateTo(to);
+  }, [groupBy, calculateDateRange]);
+
   const fetchData = useCallback(
-    async (from: Date | null, to: Date | null, group: 'weekly' | 'monthly') => {
+    async (from: Date | null, to: Date | null, group: 'daily' | 'weekly' | 'monthly') => {
       if (!from || !to) return;
 
       setLoading(true);
@@ -77,13 +107,11 @@ export const AnalyticsChart: React.FC<AnalyticsChartProps> = ({
 
         const responseData = response.data;
         setData(responseData.data || []);
-        setTotal(responseData.total || 0);
       } catch (err: any) {
         setError(
           err.response?.data?.message || err.message || 'Failed to fetch analytics data'
         );
         setData([]);
-        setTotal(0);
       } finally {
         setLoading(false);
       }
@@ -98,29 +126,23 @@ export const AnalyticsChart: React.FC<AnalyticsChartProps> = ({
     }
   }, [dateFrom, dateTo, groupBy, fetchData]);
 
-  const handleDateFilterChange = (from: Date | null, to: Date | null) => {
-    setDateFrom(from);
-    setDateTo(to);
-    
-    // Determine groupBy based on date range
-    if (from && to) {
-      const diffTime = Math.abs(to.getTime() - from.getTime());
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; // +1 to include both start and end days
-      
-      // If range is <= 7 days (a week), use weekly grouping
-      // Otherwise use monthly grouping
-      if (diffDays <= 7) {
-        setGroupBy('weekly');
-      } else {
-        setGroupBy('monthly');
-      }
-    }
-  };
-
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    if (groupBy === 'weekly') {
+    if (groupBy === 'daily') {
       return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    } else if (groupBy === 'weekly') {
+      // DATE_TRUNC('week', ...) returns Monday of the week
+      // Show week range: "Nov 25 - Dec 1"
+      const weekStart = new Date(date);
+      const weekEnd = new Date(weekStart);
+      weekEnd.setDate(weekStart.getDate() + 6); // Sunday of the week
+      const startStr = weekStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      const endStr = weekEnd.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      // If same month, show shorter format
+      if (weekStart.getMonth() === weekEnd.getMonth()) {
+        return `${weekStart.getDate()} - ${endStr}`;
+      }
+      return `${startStr} - ${endStr}`;
     } else {
       return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
     }
@@ -129,22 +151,9 @@ export const AnalyticsChart: React.FC<AnalyticsChartProps> = ({
   return (
     <Card>
       <CardContent>
-        <Box display="flex" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
-          <Typography variant="h6">
-            {title}
-          </Typography>
-          {total > 0 && (
-            <Typography variant="h6" color="primary" sx={{ fontWeight: 600 }}>
-              Total: {total.toLocaleString()}
-            </Typography>
-          )}
-        </Box>
-
-        <DateFilter
-          onFilterChange={handleDateFilterChange}
-          loading={loading}
-          currentFilter={{ from: dateFrom, to: dateTo }}
-        />
+        <Typography variant="h6" gutterBottom>
+          {title}
+        </Typography>
 
         {error && (
           <Alert severity="error" sx={{ mb: 2 }}>
