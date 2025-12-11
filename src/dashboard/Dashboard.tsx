@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, Typography, Box, CircularProgress } from '@mui/material';
 import { usePermissions } from 'react-admin';
 import { useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import PersonIcon from '@mui/icons-material/Person';
 import SportsFootballIcon from '@mui/icons-material/SportsFootball';
 import GroupIcon from '@mui/icons-material/Group';
@@ -31,39 +32,35 @@ const StatCard = ({ title, value, icon, color }: any) => (
     </Card>
 );
 
+interface DashboardStats {
+    totalUsers: number;
+    activeMatches: number;
+    totalParticipants: number;
+    futureMatches: number;
+}
+
 export const Dashboard = () => {
     const { permissions } = usePermissions();
     const navigate = useNavigate();
-    const [stats, setStats] = useState({
-        totalUsers: 0,
-        activeMatches: 0,
-        totalParticipants: 0,
-        futureMatches: 0,
-        loading: true
-    });
     const [groupBy, setGroupBy] = useState<'daily' | 'weekly' | 'monthly'>('monthly');
 
-    // Fetch dashboard stats from optimized endpoint
-    useEffect(() => {
-        const fetchStats = async () => {
-            try {
-                const response = await apiClient.get('/admin/dashboard/stats');
-                const data = response.data?.data || response.data;
-                setStats({
-                    totalUsers: data.totalUsers || 0,
-                    activeMatches: data.monthlyMatches || 0,
-                    totalParticipants: data.totalParticipants || 0,
-                    futureMatches: data.futureMatches || 0,
-                    loading: false
-                });
-            } catch (error) {
-                console.error('Failed to fetch dashboard stats:', error);
-                setStats(prev => ({ ...prev, loading: false }));
-            }
-        };
-
-        fetchStats();
-    }, []);
+    // Fetch dashboard stats from optimized endpoint with caching
+    const { data: stats, isLoading: statsLoading } = useQuery<DashboardStats>({
+        queryKey: ['dashboardStats'],
+        queryFn: async () => {
+            const response = await apiClient.get('/admin/dashboard/stats');
+            const data = response.data?.data || response.data;
+            return {
+                totalUsers: data.totalUsers || 0,
+                activeMatches: data.monthlyMatches || 0,
+                totalParticipants: data.totalParticipants || 0,
+                futureMatches: data.futureMatches || 0,
+            };
+        },
+        staleTime: 5 * 60 * 1000, // 5 minutes - dashboard stats don't change frequently
+        gcTime: 10 * 60 * 1000, // 10 minutes cache time
+        retry: 1,
+    });
 
     const canViewUsers = ['admin', 'super_admin'].includes(permissions);
     const canViewMatches = ['football_chief', 'academy_admin', 'admin', 'super_admin'].includes(permissions);
@@ -94,7 +91,7 @@ export const Dashboard = () => {
                     <Box flex="1 1 250px">
                         <StatCard
                             title="Total Users"
-                            value={stats.loading ? <CircularProgress size={20} /> : stats.totalUsers.toLocaleString()}
+                            value={statsLoading ? <CircularProgress size={20} /> : (stats?.totalUsers || 0).toLocaleString()}
                             icon={<PersonIcon sx={{ fontSize: 40 }} />}
                             color="#1976d2"
                         />
@@ -106,7 +103,7 @@ export const Dashboard = () => {
                         <Box flex="1 1 250px">
                             <StatCard
                                 title="Active Matches"
-                                value={stats.loading ? <CircularProgress size={20} /> : stats.activeMatches.toLocaleString()}
+                                value={statsLoading ? <CircularProgress size={20} /> : (stats?.activeMatches || 0).toLocaleString()}
                                 icon={<SportsFootballIcon sx={{ fontSize: 40 }} />}
                                 color="#2e7d32"
                             />
@@ -115,7 +112,7 @@ export const Dashboard = () => {
                         <Box flex="1 1 250px">
                             <StatCard
                                 title="Participants"
-                                value={stats.loading ? <CircularProgress size={20} /> : stats.totalParticipants.toLocaleString()}
+                                value={statsLoading ? <CircularProgress size={20} /> : (stats?.totalParticipants || 0).toLocaleString()}
                                 icon={<GroupIcon sx={{ fontSize: 40 }} />}
                                 color="#ed6c02"
                             />
@@ -124,7 +121,7 @@ export const Dashboard = () => {
                         <Box flex="1 1 250px">
                             <StatCard
                                 title="Future Matches"
-                                value={stats.loading ? <CircularProgress size={20} /> : stats.futureMatches.toLocaleString()}
+                                value={statsLoading ? <CircularProgress size={20} /> : (stats?.futureMatches || 0).toLocaleString()}
                                 icon={<EventIcon sx={{ fontSize: 40 }} />}
                                 color="#9c27b0"
                             />

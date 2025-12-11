@@ -135,7 +135,7 @@ export const AnalyticsChart: React.FC<AnalyticsChartProps> = ({
           <Box display="flex" justifyContent="center" alignItems="center" minHeight={300}>
             <CircularProgress />
           </Box>
-        ) : data.length === 0 ? (
+        ) : !data || data.length === 0 ? (
           <Box display="flex" justifyContent="center" alignItems="center" minHeight={300}>
             <Typography color="textSecondary">No data available for the selected period</Typography>
           </Box>

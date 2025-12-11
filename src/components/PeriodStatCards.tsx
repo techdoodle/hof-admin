@@ -15,6 +15,7 @@ interface ApiResponse {
   total: number;
 }
 
+export const PeriodStatCards: React.FC = () => {
   // Calculate This Week (Monday to Sunday)
   const getThisWeekRange = () => {
     const today = new Date();
