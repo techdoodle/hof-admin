@@ -9,8 +9,70 @@ import {
     DateInput,
     required,
     minValue,
+    useGetList,
+    SelectArrayInput,
 } from 'react-admin';
 import { Box, Typography } from '@mui/material';
+
+const CityMultiSelect = () => {
+    const { data: cities } = useGetList('cities', {
+        pagination: { page: 1, perPage: 1000 },
+        sort: { field: 'cityName', order: 'ASC' }
+    });
+
+    return (
+        <SelectArrayInput
+            source="eligibleCities"
+            label="Eligible Cities"
+            choices={cities || []}
+            optionText="cityName"
+            optionValue="id"
+            fullWidth
+            helperText="Select cities where matches must be located. Users from any city can use this code if booking matches in these cities. Leave empty for all cities."
+        />
+    );
+};
+
+const MatchMultiSelect = () => {
+    const { data: matches, isLoading } = useGetList('matches', {
+        pagination: { page: 1, perPage: 1000 },
+        sort: { field: 'startTime', order: 'ASC' }, // Show future matches first
+    });
+
+    // Filter to show only future matches
+    const now = new Date();
+    const futureMatches = (matches || []).filter((match: any) => {
+        if (!match.startTime) return false;
+        const matchStartTime = new Date(match.startTime);
+        return matchStartTime > now;
+    });
+
+    const formatMatchLabel = (match: any) => {
+        if (!match) return '';
+        const date = match.startTime ? new Date(match.startTime).toLocaleDateString('en-US', { 
+            month: 'short', 
+            day: 'numeric', 
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        }) : 'No date';
+        const venue = match.venue?.name || 'Unknown Venue';
+        return `Match #${match.matchId} - ${venue} - ${date}`;
+    };
+
+    return (
+        <SelectArrayInput
+            source="eligibleMatches"
+            label="Eligible Matches"
+            choices={futureMatches}
+            optionText={formatMatchLabel}
+            optionValue="matchId"
+            fullWidth
+            disabled={isLoading}
+            helperText="Select specific future matches. Users from any city can use this code for these matches. Works independently from city selection (OR logic). Leave empty for all matches."
+        />
+    );
+};
 
 export const PromoCodeCreate = () => {
     return (
@@ -126,6 +188,12 @@ export const PromoCodeCreate = () => {
                 </Typography>
                 <Box display="flex" flexWrap="wrap" gap={2} sx={{ mb: 3 }}>
                     <Box flex="1 1 300px">
+                        <CityMultiSelect />
+                    </Box>
+                    <Box flex="1 1 300px">
+                        <MatchMultiSelect />
+                    </Box>
+                    <Box flex="1 1 300px">
                         <BooleanInput
                             source="firstTimeUsersOnly"
                             label="First-Time Users Only"
@@ -142,10 +210,6 @@ export const PromoCodeCreate = () => {
                         />
                     </Box>
                 </Box>
-
-                <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
-                    Note: City eligibility can be set after creation in the edit view.
-                </Typography>
             </SimpleForm>
         </Create>
     );
