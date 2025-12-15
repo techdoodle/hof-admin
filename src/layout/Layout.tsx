@@ -3,6 +3,7 @@ import { Layout as RALayout, AppBar, Menu, UserMenu, usePermissions, MenuItemLin
 import { Box, Chip, Link } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
+import UpdateIcon from '@mui/icons-material/Update';
 import { getCurrentEnvironment } from '../config/environment';
 
 const CustomAppBar = () => {
@@ -60,6 +61,13 @@ const CustomMenu = () => {
       />
       {isSuperAdmin && <Menu.ResourceItem name="accounting" />}
       {isSuperAdmin && <Menu.ResourceItem name="promo-codes" />}
+      {canViewUsers && (
+        <MenuItemLink
+          to="/updates"
+          primaryText="Updates"
+          leftIcon={<UpdateIcon />}
+        />
+      )}
     </Menu>
   );
 };
