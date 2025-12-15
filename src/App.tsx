@@ -18,6 +18,7 @@ import { MatchStatsEdit } from './resources/matchStats';
 import { AccountingDashboard } from './resources/accounting';
 import { BallonDorLeaderboard } from './resources/footballChiefLeaderboard/BallonDorLeaderboard';
 import { PromoCodeList, PromoCodeCreate, PromoCodeEdit, PromoCodeShow } from './resources/promo-codes';
+import { Updates } from './resources/updates/Updates';
 
 // Icons
 import PersonIcon from '@mui/icons-material/Person';
@@ -89,8 +90,9 @@ const App = () => (
       options={{ label: 'Participants' }}
     />
 
-    {/* PlayerNation Upload - All admin roles */}
+    {/* PlayerNation Upload & Updates - All admin roles */}
     <CustomRoutes>
+      <Route path="/updates" element={<Updates />} />
       <Route path="/playernation/upload" element={<PlayerNationUpload />} />
       <Route path="/match-stats/:matchId/edit" element={<MatchStatsEdit />} />
       <Route path="/venues/upload-csv" element={<VenueCsvUpload />} />
