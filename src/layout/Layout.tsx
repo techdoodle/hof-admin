@@ -54,6 +54,7 @@ const CustomMenu = () => {
       <Menu.ResourceItem name="matches" />
       <Menu.ResourceItem name="match-participants" />
       <Menu.ResourceItem name="venues" />
+      {canViewUsers && <Menu.ResourceItem name="tickets" />}
       <MenuItemLink
         to="/ballon-dor"
         primaryText="HoF Ballon d'Or"
