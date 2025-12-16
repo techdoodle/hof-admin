@@ -19,6 +19,8 @@ import { AccountingDashboard } from './resources/accounting';
 import { BallonDorLeaderboard } from './resources/footballChiefLeaderboard/BallonDorLeaderboard';
 import { PromoCodeList, PromoCodeCreate, PromoCodeEdit, PromoCodeShow } from './resources/promo-codes';
 import { Updates } from './resources/updates/Updates';
+import { TicketList } from './resources/tickets/TicketList';
+import { TicketEdit } from './resources/tickets/TicketEdit';
 
 // Icons
 import PersonIcon from '@mui/icons-material/Person';
@@ -127,6 +129,13 @@ const App = () => (
       show={PromoCodeShow}
       icon={LocalOfferIcon}
       options={{ label: 'Promo Codes' }}
+    />
+    {/* Tickets - Admin & Super Admin */}
+    <Resource
+      name="tickets"
+      list={TicketList}
+      edit={TicketEdit}
+      options={{ label: 'Tickets' }}
     />
   </Admin>
 );

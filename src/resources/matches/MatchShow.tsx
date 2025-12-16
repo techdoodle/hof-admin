@@ -12,12 +12,24 @@ import {
   TopToolbar,
   ListButton,
   EditButton,
+  useNotify,
 } from 'react-admin';
-import { Typography, Box } from '@mui/material';
+import {
+  Typography,
+  Box,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField as MuiTextField,
+  MenuItem,
+  Button as MuiButton,
+} from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import EditIcon from '@mui/icons-material/Edit';
 // import PersonIcon from '@mui/icons-material/Person';
 import { PlayerNationStatus, PlayerMatching } from '../playernation';
+import { apiClient } from '../../utils/apiClient';
 
 const MatchTitle = () => {
   const record = useRecordContext();
@@ -30,6 +42,84 @@ const MatchShowActions = () => (
     <EditButton />
   </TopToolbar>
 );
+
+const ReportIssueButton = () => {
+  const record = useRecordContext<any>();
+  const notify = useNotify();
+  const [open, setOpen] = useState(false);
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [priority, setPriority] = useState<'low' | 'medium' | 'high'>('medium');
+
+  if (!record) return null;
+
+  const handleSubmit = async () => {
+    try {
+      await apiClient.post(`/admin/matches/${record.matchId}/tickets`, {
+        matchId: record.matchId,
+        title,
+        description,
+        priority,
+      });
+      notify('Ticket created', { type: 'success' });
+      setOpen(false);
+      setTitle('');
+      setDescription('');
+      setPriority('medium');
+    } catch (error: any) {
+      const message =
+        error.response?.data?.message || error.message || 'Failed to create ticket';
+      notify(message, { type: 'error' });
+    }
+  };
+
+  return (
+    <>
+      <MuiButton variant="outlined" onClick={() => setOpen(true)} sx={{ ml: 2 }}>
+        Report issue
+      </MuiButton>
+      <Dialog open={open} onClose={() => setOpen(false)} fullWidth maxWidth="sm">
+        <DialogTitle>Report issue for match #{record.matchId}</DialogTitle>
+        <DialogContent>
+          <MuiTextField
+            label="Title"
+            fullWidth
+            margin="normal"
+            value={title}
+            onChange={e => setTitle(e.target.value)}
+          />
+          <MuiTextField
+            label="Description"
+            fullWidth
+            margin="normal"
+            multiline
+            minRows={3}
+            value={description}
+            onChange={e => setDescription(e.target.value)}
+          />
+          <MuiTextField
+            select
+            label="Priority"
+            fullWidth
+            margin="normal"
+            value={priority}
+            onChange={e => setPriority(e.target.value as any)}
+          >
+            <MenuItem value="low">Low</MenuItem>
+            <MenuItem value="medium">Medium</MenuItem>
+            <MenuItem value="high">High</MenuItem>
+          </MuiTextField>
+        </DialogContent>
+        <DialogActions>
+          <MuiButton onClick={() => setOpen(false)}>Cancel</MuiButton>
+          <MuiButton onClick={handleSubmit} disabled={!title || !description}>
+            Create ticket
+          </MuiButton>
+        </DialogActions>
+      </Dialog>
+    </>
+  );
+};
 
 const StatsActions = () => {
   const record = useRecordContext();
@@ -134,6 +224,10 @@ export const MatchShow = () => {
         <TextField source="matchRecap" label="Recap" />
         <DateField source="createdAt" label="Created At" showTime />
         <DateField source="updatedAt" label="Updated At" showTime />
+
+        <Box sx={{ mt: 2 }}>
+          <ReportIssueButton />
+        </Box>
 
         <StatsActions />
 
