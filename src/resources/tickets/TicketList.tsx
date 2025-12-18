@@ -7,6 +7,7 @@ import {
   NumberField,
   TextInput,
   SelectInput,
+  FunctionField,
 } from 'react-admin';
 
 const ticketStatusChoices = [
@@ -38,7 +39,14 @@ export const TicketList = () => (
       <TextField source="title" label="Title" />
       <TextField source="status" label="Status" />
       <TextField source="priority" label="Priority" />
-      <NumberField source="createdByAdminId" label="Created By" />
+      <FunctionField
+        label="Created By"
+        render={(record: any) =>
+          record?.createdByAdmin
+            ? `${record.createdByAdmin.firstName} ${record.createdByAdmin.lastName}`
+            : record?.createdByAdminId ?? '-'
+        }
+      />
       <NumberField source="assignedToAdminId" label="Assigned To" />
       <DateField source="createdAt" label="Created At" showTime />
       <DateField source="updatedAt" label="Updated At" showTime />
