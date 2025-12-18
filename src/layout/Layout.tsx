@@ -13,20 +13,29 @@ const CustomAppBar = () => {
   return (
     <AppBar>
       <Box display="flex" alignItems="center" justifyContent="space-between" width="100%">
-        <Link
-          component="button"
-          variant="h6"
-          color="inherit"
-          underline="none"
-          onClick={() => navigate('/')}
-          sx={{
-            '&:hover': {
-              opacity: 0.8
-            }
-          }}
-        >
-          HOF Admin Panel
-        </Link>
+        <Box display="flex" alignItems="center" gap={1}>
+          <Box
+            component="img"
+            src="/hof-square-logo.svg"
+            alt="HOF Logo"
+            sx={{ height: 32, width: 'auto', cursor: 'pointer' }}
+            onClick={() => navigate('/')}
+          />
+          <Link
+            component="button"
+            variant="h6"
+            color="inherit"
+            underline="none"
+            onClick={() => navigate('/')}
+            sx={{
+              '&:hover': {
+                opacity: 0.8
+              }
+            }}
+          >
+            HOF Admin Panel
+          </Link>
+        </Box>
         <Box display="flex" alignItems="center" gap={2}>
           <Chip
             label={environment.label}
