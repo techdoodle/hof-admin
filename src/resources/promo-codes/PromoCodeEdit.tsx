@@ -14,6 +14,7 @@ import {
     ShowButton,
     useGetList,
     SelectArrayInput,
+    useRecordContext,
 } from 'react-admin';
 import { Box, Typography } from '@mui/material';
 
@@ -85,6 +86,8 @@ const MatchMultiSelect = () => {
 };
 
 const UserMultiSelect = () => {
+    const record = useRecordContext();
+
     const { data: users, isLoading } = useGetList('users', {
         pagination: { page: 1, perPage: 1000 },
         sort: { field: 'firstName', order: 'ASC' }
@@ -101,6 +104,15 @@ const UserMultiSelect = () => {
         return parts.join(' ');
     };
 
+    // Pre-populate allowedUserIds from existing allowedUsers relation on first load
+    const defaultAllowedUserIds = React.useMemo(
+        () =>
+            (record?.allowedUsers || [])
+                .map((au: any) => au.userId || au.user?.id || au.id)
+                .filter((id: any) => id !== undefined),
+        [record]
+    );
+
     return (
         <SelectArrayInput
             source="allowedUserIds"
@@ -110,21 +122,32 @@ const UserMultiSelect = () => {
             optionValue="id"
             fullWidth
             disabled={isLoading}
+            defaultValue={defaultAllowedUserIds}
             helperText="Select specific users who can use this promo code. Leave empty to allow all users (subject to other restrictions)."
         />
     );
 };
 
 export const PromoCodeEdit = () => {
-    // Transform data: convert allowedUsers array to allowedUserIds array
+    // Transform data before sending to backend
     const transform = (data: any) => {
         const transformed = { ...data };
-        // Convert allowedUsers (array of objects) to allowedUserIds (array of numbers)
-        if (data.allowedUsers && Array.isArray(data.allowedUsers)) {
-            transformed.allowedUserIds = data.allowedUsers.map((au: any) => 
-                au.userId || au.user?.id || au.id
-            ).filter((id: any) => id !== undefined);
+
+        // If allowedUserIds is present from the form, trust it (including empty array)
+        if (Array.isArray(transformed.allowedUserIds)) {
+            transformed.allowedUserIds = transformed.allowedUserIds
+                .map((id: any) => Number(id))
+                .filter((id: any) => !isNaN(id));
+        } else if (Array.isArray(transformed.allowedUsers)) {
+            // Fallback: when editing an older record that only has allowedUsers relation
+            transformed.allowedUserIds = transformed.allowedUsers
+                .map((au: any) => au.userId || au.user?.id || au.id)
+                .filter((id: any) => id !== undefined);
         }
+
+        // We never need to send the relation object back to the backend
+        delete (transformed as any).allowedUsers;
+
         return transformed;
     };
 
