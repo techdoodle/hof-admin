@@ -74,6 +74,37 @@ const MatchMultiSelect = () => {
     );
 };
 
+const UserMultiSelect = () => {
+    const { data: users, isLoading } = useGetList('users', {
+        pagination: { page: 1, perPage: 1000 },
+        sort: { field: 'firstName', order: 'ASC' }
+    });
+
+    const formatUserLabel = (user: any) => {
+        if (!user) return '';
+        const name = `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'Unnamed User';
+        const phone = user.phoneNumber || '';
+        const email = user.email || '';
+        const parts = [name];
+        if (phone) parts.push(`(${phone})`);
+        if (email) parts.push(`- ${email}`);
+        return parts.join(' ');
+    };
+
+    return (
+        <SelectArrayInput
+            source="allowedUserIds"
+            label="Allowed Users"
+            choices={users || []}
+            optionText={formatUserLabel}
+            optionValue="id"
+            fullWidth
+            disabled={isLoading}
+            helperText="Select specific users who can use this promo code. Leave empty to allow all users (subject to other restrictions)."
+        />
+    );
+};
+
 export const PromoCodeCreate = () => {
     return (
         <Create>
@@ -192,6 +223,9 @@ export const PromoCodeCreate = () => {
                     </Box>
                     <Box flex="1 1 300px">
                         <MatchMultiSelect />
+                    </Box>
+                    <Box flex="1 1 100%">
+                        <UserMultiSelect />
                     </Box>
                     <Box flex="1 1 300px">
                         <BooleanInput

@@ -14,6 +14,7 @@ import {
     ShowButton,
     useGetList,
     SelectArrayInput,
+    useRecordContext,
 } from 'react-admin';
 import { Box, Typography } from '@mui/material';
 
@@ -84,9 +85,74 @@ const MatchMultiSelect = () => {
     );
 };
 
-export const PromoCodeEdit = () => {
+const UserMultiSelect = () => {
+    const record = useRecordContext();
+
+    const { data: users, isLoading } = useGetList('users', {
+        pagination: { page: 1, perPage: 1000 },
+        sort: { field: 'firstName', order: 'ASC' }
+    });
+
+    const formatUserLabel = (user: any) => {
+        if (!user) return '';
+        const name = `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'Unnamed User';
+        const phone = user.phoneNumber || '';
+        const email = user.email || '';
+        const parts = [name];
+        if (phone) parts.push(`(${phone})`);
+        if (email) parts.push(`- ${email}`);
+        return parts.join(' ');
+    };
+
+    // Pre-populate allowedUserIds from existing allowedUsers relation on first load
+    const defaultAllowedUserIds = React.useMemo(
+        () =>
+            (record?.allowedUsers || [])
+                .map((au: any) => au.userId || au.user?.id || au.id)
+                .filter((id: any) => id !== undefined),
+        [record]
+    );
+
     return (
-        <Edit actions={<PromoCodeEditActions />}>
+        <SelectArrayInput
+            source="allowedUserIds"
+            label="Allowed Users"
+            choices={users || []}
+            optionText={formatUserLabel}
+            optionValue="id"
+            fullWidth
+            disabled={isLoading}
+            defaultValue={defaultAllowedUserIds}
+            helperText="Select specific users who can use this promo code. Leave empty to allow all users (subject to other restrictions)."
+        />
+    );
+};
+
+export const PromoCodeEdit = () => {
+    // Transform data before sending to backend
+    const transform = (data: any) => {
+        const transformed = { ...data };
+
+        // If allowedUserIds is present from the form, trust it (including empty array)
+        if (Array.isArray(transformed.allowedUserIds)) {
+            transformed.allowedUserIds = transformed.allowedUserIds
+                .map((id: any) => Number(id))
+                .filter((id: any) => !isNaN(id));
+        } else if (Array.isArray(transformed.allowedUsers)) {
+            // Fallback: when editing an older record that only has allowedUsers relation
+            transformed.allowedUserIds = transformed.allowedUsers
+                .map((au: any) => au.userId || au.user?.id || au.id)
+                .filter((id: any) => id !== undefined);
+        }
+
+        // We never need to send the relation object back to the backend
+        delete (transformed as any).allowedUsers;
+
+        return transformed;
+    };
+
+    return (
+        <Edit actions={<PromoCodeEditActions />} transform={transform}>
             <SimpleForm>
                 <Typography variant="h6" gutterBottom>
                     Basic Information
@@ -195,6 +261,9 @@ export const PromoCodeEdit = () => {
                     </Box>
                     <Box flex="1 1 300px">
                         <MatchMultiSelect />
+                    </Box>
+                    <Box flex="1 1 100%">
+                        <UserMultiSelect />
                     </Box>
                     <Box flex="1 1 300px">
                         <BooleanInput

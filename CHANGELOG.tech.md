@@ -1,3 +1,13 @@
+## v1.2.0 (2025-01-21)
+
+### Added
+- Promo code user restriction UI:
+  - Added `UserMultiSelect` component to `PromoCodeCreate.tsx` and `PromoCodeEdit.tsx` for selecting allowed users.
+  - Users are displayed with name, phone number, and email for easy identification.
+  - Added `AllowedUsersField` component to `PromoCodeShow.tsx` to display restricted users with user details.
+  - Added data transformation in `PromoCodeEdit.tsx` to convert `allowedUsers` relation to `allowedUserIds` array for form submission.
+  - Promo code forms now send `allowedUserIds` array to backend on create/update.
+
 ## v1.1.0 (2025-01-20)
 
 ### Added

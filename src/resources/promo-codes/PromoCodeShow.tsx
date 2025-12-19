@@ -10,6 +10,7 @@ import {
     EditButton,
     ListButton,
     useRecordContext,
+    useGetList,
 } from 'react-admin';
 import { Box, Typography, Card, CardContent, Grid, Chip } from '@mui/material';
 
@@ -40,6 +41,56 @@ const DiscountDisplay = () => {
                 }}
             />
             <span style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>{display}</span>
+        </Box>
+    );
+};
+
+const AllowedUsersField = () => {
+    const record = useRecordContext();
+    const allowedUsers = record?.allowedUsers || [];
+
+    // Fetch user details for allowed users
+    const userIds = allowedUsers.map((au: any) => au.userId || au.user?.id).filter(Boolean);
+    const { data: users } = useGetList('users', {
+        filter: { id: userIds },
+        pagination: { page: 1, perPage: 1000 }
+    }, { enabled: userIds.length > 0 });
+
+    if (allowedUsers.length === 0) {
+        return (
+            <Typography variant="body2" color="text.secondary">
+                No user restrictions (available to all users)
+            </Typography>
+        );
+    }
+
+    const userMap = new Map((users || []).map((u: any) => [u.id, u]));
+
+    return (
+        <Box>
+            <Typography variant="body2" color="text.secondary" gutterBottom>
+                Restricted to {allowedUsers.length} user{allowedUsers.length !== 1 ? 's' : ''}:
+            </Typography>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 1 }}>
+                {allowedUsers.map((au: any, index: number) => {
+                    const userId = au.userId || au.user?.id;
+                    const user = userMap.get(userId);
+                    const name = user 
+                        ? `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'Unnamed User'
+                        : `User ID: ${userId}`;
+                    const phone = user?.phoneNumber || '';
+                    const email = user?.email || '';
+                    
+                    return (
+                        <Chip
+                            key={userId || index}
+                            label={`${name}${phone ? ` (${phone})` : ''}${email ? ` - ${email}` : ''}`}
+                            size="small"
+                            sx={{ mb: 0.5 }}
+                        />
+                    );
+                })}
+            </Box>
         </Box>
     );
 };
@@ -118,6 +169,7 @@ export const PromoCodeShow = () => {
                 <NumberField source="maxUsesPerUser" label="Max Uses Per User" />
                 <NumberField source="usageCount" label="Current Usage Count" />
                 <BooleanField source="firstTimeUsersOnly" label="First-Time Users Only" />
+                <AllowedUsersField />
                 <UsageStats />
             </SimpleShowLayout>
         </Show>
