@@ -84,9 +84,52 @@ const MatchMultiSelect = () => {
     );
 };
 
-export const PromoCodeEdit = () => {
+const UserMultiSelect = () => {
+    const { data: users, isLoading } = useGetList('users', {
+        pagination: { page: 1, perPage: 1000 },
+        sort: { field: 'firstName', order: 'ASC' }
+    });
+
+    const formatUserLabel = (user: any) => {
+        if (!user) return '';
+        const name = `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'Unnamed User';
+        const phone = user.phoneNumber || '';
+        const email = user.email || '';
+        const parts = [name];
+        if (phone) parts.push(`(${phone})`);
+        if (email) parts.push(`- ${email}`);
+        return parts.join(' ');
+    };
+
     return (
-        <Edit actions={<PromoCodeEditActions />}>
+        <SelectArrayInput
+            source="allowedUserIds"
+            label="Allowed Users"
+            choices={users || []}
+            optionText={formatUserLabel}
+            optionValue="id"
+            fullWidth
+            disabled={isLoading}
+            helperText="Select specific users who can use this promo code. Leave empty to allow all users (subject to other restrictions)."
+        />
+    );
+};
+
+export const PromoCodeEdit = () => {
+    // Transform data: convert allowedUsers array to allowedUserIds array
+    const transform = (data: any) => {
+        const transformed = { ...data };
+        // Convert allowedUsers (array of objects) to allowedUserIds (array of numbers)
+        if (data.allowedUsers && Array.isArray(data.allowedUsers)) {
+            transformed.allowedUserIds = data.allowedUsers.map((au: any) => 
+                au.userId || au.user?.id || au.id
+            ).filter((id: any) => id !== undefined);
+        }
+        return transformed;
+    };
+
+    return (
+        <Edit actions={<PromoCodeEditActions />} transform={transform}>
             <SimpleForm>
                 <Typography variant="h6" gutterBottom>
                     Basic Information
@@ -195,6 +238,9 @@ export const PromoCodeEdit = () => {
                     </Box>
                     <Box flex="1 1 300px">
                         <MatchMultiSelect />
+                    </Box>
+                    <Box flex="1 1 100%">
+                        <UserMultiSelect />
                     </Box>
                     <Box flex="1 1 300px">
                         <BooleanInput
