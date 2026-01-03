@@ -245,13 +245,13 @@ export const MatchList = () => {
         // For Past, Current, and Upcoming tabs: exclude CANCELLED matches
         f.statusNot = 'CANCELLED';
         
-        // For Past tab: filter out matches older than 10 days
+        // For Past tab: filter out matches older than 15 days
         if (tab === 0) {
-            const tenDaysAgo = new Date();
-            tenDaysAgo.setDate(tenDaysAgo.getDate() - 10);
+            const fifteenDaysAgo = new Date();
+            fifteenDaysAgo.setDate(fifteenDaysAgo.getDate() - 15);
             f.dateFrom = dateFrom 
-                ? (new Date(dateFrom) > tenDaysAgo ? dateFrom : tenDaysAgo.toISOString())
-                : tenDaysAgo.toISOString();
+                ? (new Date(dateFrom) > fifteenDaysAgo ? dateFrom : fifteenDaysAgo.toISOString())
+                : fifteenDaysAgo.toISOString();
         } else if (dateFrom) {
             f.dateFrom = dateFrom;
         }
