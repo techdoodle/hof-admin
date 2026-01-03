@@ -30,6 +30,7 @@ const userFilters = [
             { id: 'super_admin', name: 'Super Admin' },
             { id: 'football_chief', name: 'Football Chief' },
             { id: 'academy_admin', name: 'Academy Admin' },
+            { id: 'vendor', name: 'Vendor' },
             { id: 'player', name: 'Player' },
         ]}
         emptyText="All Roles"
@@ -57,6 +58,7 @@ const RoleField = ({ label, source }: any) => {
         admin: '#ff9800', // Orange
         football_chief: '#2196f3', // Blue
         academy_admin: '#4caf50', // Green
+        vendor: '#9c27b0', // Purple
         player: '#9e9e9e', // Grey
     };
 
@@ -65,6 +67,7 @@ const RoleField = ({ label, source }: any) => {
         admin: 'Admin',
         football_chief: 'Football Chief',
         academy_admin: 'Academy Admin',
+        vendor: 'Vendor',
         player: 'Player',
     };
 

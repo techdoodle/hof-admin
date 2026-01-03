@@ -1,5 +1,5 @@
 import React from 'react';
-import { Admin, Resource, CustomRoutes } from 'react-admin';
+import { Admin, Resource, CustomRoutes, usePermissions } from 'react-admin';
 import { Route } from 'react-router-dom';
 import { QueryClient } from '@tanstack/react-query';
 import { authProvider } from './providers/authProvider';
@@ -51,93 +51,98 @@ export const queryClient = new QueryClient({
   },
 });
 
-const App = () => (
-  <Admin
-    dataProvider={dataProvider}
-    authProvider={authProvider}
-    theme={theme}
-    layout={Layout}
-    dashboard={Dashboard}
-    loginPage={LoginPage}
-    requireAuth
-  >
-    {/* User Management - Admin & Super Admin only */}
-    <Resource
-      name="users"
-      list={UserList}
-      edit={UserEdit}
-      create={UserCreate}
-      show={UserShow}
-      icon={PersonIcon}
-      options={{ label: 'Users' }}
-    />
+const App = () => {
+  // We'll use a different approach - always register resources but control access via backend and menu
+  // This avoids issues with usePermissions() hook timing
+  return (
+    <Admin
+      dataProvider={dataProvider}
+      authProvider={authProvider}
+      theme={theme}
+      layout={Layout}
+      dashboard={Dashboard}
+      loginPage={LoginPage}
+      requireAuth
+    >
+      {/* User Management - Admin & Super Admin only (access controlled by backend) */}
+      <Resource
+        name="users"
+        list={UserList}
+        edit={UserEdit}
+        create={UserCreate}
+        show={UserShow}
+        icon={PersonIcon}
+        options={{ label: 'Users' }}
+      />
 
-    {/* Match Management - All admin roles */}
-    <Resource
-      name="matches"
-      list={MatchList}
-      edit={MatchEdit}
-      create={MatchCreate}
-      show={MatchShow}
-      icon={SportsFootballIcon}
-      options={{ label: 'Matches' }}
-    />
+      {/* Match Management - All admin roles including vendors */}
+      <Resource
+        name="matches"
+        list={MatchList}
+        edit={MatchEdit}
+        create={MatchCreate}
+        show={MatchShow}
+        icon={SportsFootballIcon}
+        options={{ label: 'Matches' }}
+      />
 
-    {/* Match Participants - All admin roles */}
-    <Resource
-      name="match-participants"
-      list={MatchParticipantList}
-      create={MatchParticipantCreate}
-      icon={GroupIcon}
-      options={{ label: 'Participants' }}
-    />
+      {/* Match Participants - All admin roles except vendors (access controlled by backend and menu) */}
+      <Resource
+        name="match-participants"
+        list={MatchParticipantList}
+        create={MatchParticipantCreate}
+        icon={GroupIcon}
+        options={{ label: 'Participants' }}
+      />
 
-    {/* PlayerNation Upload & Updates - All admin roles */}
-    <CustomRoutes>
-      <Route path="/updates" element={<Updates />} />
-      <Route path="/playernation/upload" element={<PlayerNationUpload />} />
-      <Route path="/match-stats/:matchId/edit" element={<MatchStatsEdit />} />
-      <Route path="/venues/upload-csv" element={<VenueCsvUpload />} />
-      <Route path="/ballon-dor" element={<BallonDorLeaderboard />} />
-    </CustomRoutes>
+      {/* PlayerNation Upload & Updates - All admin roles except vendors (access controlled by menu) */}
+      <CustomRoutes>
+        <Route path="/updates" element={<Updates />} />
+        <Route path="/playernation/upload" element={<PlayerNationUpload />} />
+        <Route path="/match-stats/:matchId/edit" element={<MatchStatsEdit />} />
+        <Route path="/venues/upload-csv" element={<VenueCsvUpload />} />
+        <Route path="/ballon-dor" element={<BallonDorLeaderboard />} />
+      </CustomRoutes>
 
-    {/* Venue Management */}
-    <Resource
-      name="venues"
-      list={VenueList}
-      edit={VenueEdit}
-      create={VenueCreate}
-      show={VenueShow}
-      icon={LocationOnIcon}
-      options={{ label: 'Venues' }}
-    />
+      {/* Venue Management - All admin roles except vendors (access controlled by backend and menu) */}
+      <Resource
+        name="venues"
+        list={VenueList}
+        edit={VenueEdit}
+        create={VenueCreate}
+        show={VenueShow}
+        icon={LocationOnIcon}
+        options={{ label: 'Venues' }}
+      />
 
-    {/* Accounting - Super Admin only */}
-    <Resource
-      name="accounting"
-      list={AccountingDashboard}
-      icon={AccountBalanceIcon}
-      options={{ label: 'Accounting' }}
-    />
+      {/* Accounting - Super Admin only (access controlled by backend and menu) */}
+      <Resource
+        name="accounting"
+        list={AccountingDashboard}
+        icon={AccountBalanceIcon}
+        options={{ label: 'Accounting' }}
+      />
 
-    {/* Promo Codes - Super Admin only */}
-    <Resource
-      name="promo-codes"
-      list={PromoCodeList}
-      create={PromoCodeCreate}
-      edit={PromoCodeEdit}
-      show={PromoCodeShow}
-      icon={LocalOfferIcon}
-      options={{ label: 'Promo Codes' }}
-    />
-    {/* Tickets - Admin & Super Admin */}
-    <Resource
-      name="tickets"
-      list={TicketList}
-      edit={TicketEdit}
-      options={{ label: 'Tickets' }}
-    />
-  </Admin>
-);
+      {/* Promo Codes - Super Admin only (access controlled by backend and menu) */}
+      <Resource
+        name="promo-codes"
+        list={PromoCodeList}
+        create={PromoCodeCreate}
+        edit={PromoCodeEdit}
+        show={PromoCodeShow}
+        icon={LocalOfferIcon}
+        options={{ label: 'Promo Codes' }}
+      />
+
+      {/* Tickets - Admin & Super Admin (access controlled by backend and menu) */}
+      <Resource
+        name="tickets"
+        list={TicketList}
+        edit={TicketEdit}
+        options={{ label: 'Tickets' }}
+      />
+    </Admin>
+  );
+};
 
 export default App;
