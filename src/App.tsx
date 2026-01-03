@@ -1,5 +1,5 @@
 import React from 'react';
-import { Admin, Resource, CustomRoutes, usePermissions } from 'react-admin';
+import { Admin, Resource, CustomRoutes } from 'react-admin';
 import { Route } from 'react-router-dom';
 import { QueryClient } from '@tanstack/react-query';
 import { authProvider } from './providers/authProvider';
