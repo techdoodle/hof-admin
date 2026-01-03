@@ -102,6 +102,7 @@ export const UserCreate = () => {
                                     { id: 'player', name: 'Player' },
                                     { id: 'academy_admin', name: 'Academy Admin' },
                                     { id: 'football_chief', name: 'Football Chief' },
+                                    { id: 'vendor', name: 'Vendor' },
                                     { id: 'admin', name: 'Admin' },
                                     { id: 'super_admin', name: 'Super Admin' },
                                 ]}

@@ -32,7 +32,7 @@ export const authProvider: AuthProvider = {
             const { accessToken, role, id, firstName, lastName } = verifyResponse.data;
 
             // Check if user has admin privileges
-            const adminRoles = ['admin', 'super_admin', 'football_chief', 'academy_admin'];
+            const adminRoles = ['admin', 'super_admin', 'football_chief', 'academy_admin', 'vendor'];
             if (!adminRoles.includes(role)) {
                 throw new Error('Access denied. Admin privileges required.');
             }
@@ -66,7 +66,7 @@ export const authProvider: AuthProvider = {
 
         if (token && user) {
             const userData = JSON.parse(user);
-            const adminRoles = ['admin', 'super_admin', 'football_chief', 'academy_admin'];
+            const adminRoles = ['admin', 'super_admin', 'football_chief', 'academy_admin', 'vendor'];
 
             if (adminRoles.includes(userData.role)) {
                 return Promise.resolve();

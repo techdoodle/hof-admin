@@ -57,7 +57,7 @@ const MatchListActions = () => {
     const dataProvider = useDataProvider();
     const notify = useNotify();
     const [backfilling, setBackfilling] = useState(false);
-    const canCreateMatches = ['football_chief', 'academy_admin', 'admin', 'super_admin'].includes(permissions);
+    const canCreateMatches = ['football_chief', 'academy_admin', 'admin', 'super_admin', 'vendor'].includes(permissions);
     const canBackfillHighlights = ['admin', 'super_admin'].includes(permissions);
 
     const handleBulkBackfillHighlights = async () => {
@@ -107,7 +107,7 @@ const MatchActions = ({ record }: any) => {
     const notify = useNotify();
     const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
 
-    const canEditMatches = ['football_chief', 'academy_admin', 'admin', 'super_admin'].includes(permissions);
+    const canEditMatches = ['football_chief', 'academy_admin', 'admin', 'super_admin', 'vendor'].includes(permissions);
     const canCancelMatches = permissions === 'super_admin';
     const canManageParticipants = ['football_chief', 'academy_admin', 'admin', 'super_admin'].includes(permissions);
 

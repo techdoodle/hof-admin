@@ -54,8 +54,18 @@ const CustomAppBar = () => {
 const CustomMenu = () => {
   const { permissions } = usePermissions();
   const role = permissions as string;
+  const isVendor = role === 'vendor';
   const canViewUsers = ['admin', 'super_admin'].includes(role);
   const isSuperAdmin = role === 'super_admin';
+  
+  // Vendors only see matches
+  if (isVendor) {
+    return (
+      <Menu>
+        <Menu.ResourceItem name="matches" />
+      </Menu>
+    );
+  }
   
   return (
     <Menu>
