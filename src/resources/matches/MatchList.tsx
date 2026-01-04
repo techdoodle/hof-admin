@@ -108,7 +108,7 @@ const MatchActions = ({ record }: any) => {
     const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
 
     const canEditMatches = ['football_chief', 'academy_admin', 'admin', 'super_admin', 'vendor'].includes(permissions);
-    const canCancelMatches = ['super_admin', 'vendor'].includes(permissions);
+    const canCancelMatches = ['super_admin', 'admin', 'vendor'].includes(permissions);
     const canManageParticipants = ['football_chief', 'academy_admin', 'admin', 'super_admin', 'vendor'].includes(permissions);
 
     const handleParticipants = () => {
