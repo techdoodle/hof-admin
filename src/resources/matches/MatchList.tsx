@@ -108,8 +108,8 @@ const MatchActions = ({ record }: any) => {
     const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
 
     const canEditMatches = ['football_chief', 'academy_admin', 'admin', 'super_admin', 'vendor'].includes(permissions);
-    const canCancelMatches = permissions === 'super_admin';
-    const canManageParticipants = ['football_chief', 'academy_admin', 'admin', 'super_admin'].includes(permissions);
+    const canCancelMatches = ['super_admin', 'vendor'].includes(permissions);
+    const canManageParticipants = ['football_chief', 'academy_admin', 'admin', 'super_admin', 'vendor'].includes(permissions);
 
     const handleParticipants = () => {
         navigate(`/match-participants?filter=${JSON.stringify({ matchId: record.matchId })}`);

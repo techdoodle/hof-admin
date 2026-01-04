@@ -58,11 +58,12 @@ const CustomMenu = () => {
   const canViewUsers = ['admin', 'super_admin'].includes(role);
   const isSuperAdmin = role === 'super_admin';
   
-  // Vendors only see matches
+  // Vendors see matches and match-participants (for managing their own matches)
   if (isVendor) {
     return (
       <Menu>
         <Menu.ResourceItem name="matches" />
+        <Menu.ResourceItem name="match-participants" />
       </Menu>
     );
   }
