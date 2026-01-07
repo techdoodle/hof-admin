@@ -25,6 +25,7 @@ import VideoCallIcon from '@mui/icons-material/VideoCall';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import CancelIcon from '@mui/icons-material/Cancel';
 import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
+import ShareIcon from '@mui/icons-material/Share';
 import { useDataProvider, useNotify } from 'react-admin';
 import { MatchCancelDialog } from './MatchCancelDialog';
 
@@ -132,6 +133,45 @@ const MatchActions = ({ record }: any) => {
         }
     };
 
+    const handleShare = async (e: React.MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        // Get frontend URL - use app subdomain
+        const frontendUrl = process.env.REACT_APP_FRONTEND_URL || 'https://app.humansoffootball.in';
+        const shareUrl = `${frontendUrl}/match-details/${record.matchId}`;
+        
+        // Use the same invite text as frontend
+        const shareText = `Boots laced and ready to go! 💪⚽
+
+Think you can take us on? Join the match — let's settle it on the pitch 
+
+Check all match details👇
+
+${shareUrl}
+
+Every player matters. Every moment counts.`;
+        
+        // Copy to clipboard
+        try {
+            await navigator.clipboard.writeText(shareText);
+            notify('Match invite copied to clipboard!', { type: 'success' });
+        } catch (error) {
+            // Fallback for older browsers
+            const textArea = document.createElement('textarea');
+            textArea.value = shareText;
+            document.body.appendChild(textArea);
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                notify('Match invite copied to clipboard!', { type: 'success' });
+            } catch (err) {
+                notify('Failed to copy invite', { type: 'error' });
+            }
+            document.body.removeChild(textArea);
+        }
+    };
+
     return (
         <div style={{ display: 'flex', gap: 8 }}>
             {canManageParticipants && (
@@ -165,6 +205,15 @@ const MatchActions = ({ record }: any) => {
                     Re-poll
                 </Button>
             )}
+            <Button
+                size="small"
+                startIcon={<ShareIcon />}
+                onClick={handleShare}
+                variant="outlined"
+                color="primary"
+            >
+                Share
+            </Button>
             <ShowButton record={record} />
             {canEditMatches && <EditButton record={record} />}
             {canCancelMatches && record.status !== 'CANCELLED' && (

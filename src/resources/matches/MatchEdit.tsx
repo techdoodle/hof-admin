@@ -157,6 +157,13 @@ export const MatchEdit = () => {
             />
           </Box>
           <Box flex="1 1 300px">
+            <BooleanInput
+              source="isPrivate"
+              label="PRIVATE"
+              helperText="Private matches won't appear on frontend unless link is shared"
+            />
+          </Box>
+          <Box flex="1 1 300px">
             <NumberInput
               source="playerCapacity"
               label="Player Capacity"
@@ -212,6 +219,15 @@ export const MatchEdit = () => {
               min={0}
               fullWidth
               helperText="Cost paid to football chief for this match"
+            />
+          </Box>
+          <Box flex="1 1 300px">
+            <NumberInput
+              source="venueCost"
+              label="Venue Cost (₹)"
+              min={0}
+              fullWidth
+              helperText="Cost paid to venue for this match"
             />
           </Box>
         </Box>

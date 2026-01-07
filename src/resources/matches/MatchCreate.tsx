@@ -6,6 +6,7 @@ import {
   ReferenceInput,
   SelectInput,
   NumberInput,
+  BooleanInput,
   required,
   TopToolbar,
   CreateButton,
@@ -182,6 +183,14 @@ export const MatchCreate = () => {
               fullWidth
             />
           </Box>
+          <Box flex="1 1 300px">
+            <BooleanInput
+              source="isPrivate"
+              label="PRIVATE"
+              helperText="Private matches won't appear on frontend unless link is shared"
+              fullWidth
+            />
+          </Box>
           {/* Team scores are set post-match; omitted in create form */}
           <Box flex="1 1 300px">
             <ReferenceInput
@@ -208,6 +217,15 @@ export const MatchCreate = () => {
               min={0}
               fullWidth
               helperText="Cost paid to football chief for this match"
+            />
+          </Box>
+          <Box flex="1 1 300px">
+            <NumberInput
+              source="venueCost"
+              label="Venue Cost (₹)"
+              min={0}
+              fullWidth
+              helperText="Cost paid to venue for this match"
             />
           </Box>
         </Box>
