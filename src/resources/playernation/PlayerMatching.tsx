@@ -169,9 +169,22 @@ const PlayerMatching: React.FC<PlayerMatchingProps> = ({ matchId, onClose }) => 
       });
 
       notify('Player mappings saved successfully', { type: 'success' });
-      loadData(); // Reload to refresh status
-    } catch (error) {
-      notify('Failed to save mappings', { type: 'error' });
+      
+      // Await loadData to ensure proper error handling and state synchronization
+      try {
+        await loadData();
+      } catch (reloadError) {
+        console.error('[PlayerMatching] Failed to reload data after save:', reloadError);
+        // Show warning but don't make it look like save failed
+        notify('Mappings saved, but failed to refresh the list. Please refresh manually if needed.', { 
+          type: 'warning' 
+        });
+      }
+    } catch (error: any) {
+      console.error('[PlayerMatching] Failed to save mappings:', error);
+      const errorMessage = error?.message || error?.body?.message || 'Failed to save mappings';
+      notify(`Failed to save mappings: ${errorMessage}`, { type: 'error' });
+      // Don't reload on error - preserve admin's work so they can try again
     } finally {
       setSaving(false);
     }
