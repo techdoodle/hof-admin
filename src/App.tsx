@@ -10,6 +10,7 @@ import { LoginPage } from './components/LoginPage';
 // Resource components
 import { UserList, UserEdit, UserCreate, UserShow } from './resources/users';
 import { MatchList, MatchEdit, MatchCreate, MatchShow } from './resources/matches';
+import { MatchExcelUpload } from './resources/matches/MatchExcelUpload';
 import { MatchParticipantList, MatchParticipantCreate } from './resources/matchParticipants';
 import { PlayerNationUpload } from './resources/playernation';
 import { VenueList, VenueEdit, VenueCreate, VenueShow } from './resources/venues';
@@ -101,6 +102,7 @@ const App = () => {
         <Route path="/playernation/upload" element={<PlayerNationUpload />} />
         <Route path="/match-stats/:matchId/edit" element={<MatchStatsEdit />} />
         <Route path="/venues/upload-csv" element={<VenueCsvUpload />} />
+        <Route path="/matches/upload-excel" element={<MatchExcelUpload />} />
         <Route path="/ballon-dor" element={<BallonDorLeaderboard />} />
       </CustomRoutes>
 

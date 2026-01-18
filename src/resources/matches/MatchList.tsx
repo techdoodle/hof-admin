@@ -26,6 +26,7 @@ import RefreshIcon from '@mui/icons-material/Refresh';
 import CancelIcon from '@mui/icons-material/Cancel';
 import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
 import ShareIcon from '@mui/icons-material/Share';
+import UploadFileIcon from '@mui/icons-material/UploadFile';
 import { useDataProvider, useNotify } from 'react-admin';
 import { MatchCancelDialog } from './MatchCancelDialog';
 
@@ -54,6 +55,7 @@ const matchFilters = [
 ];
 
 const MatchListActions = () => {
+    const navigate = useNavigate();
     const { permissions } = usePermissions();
     const dataProvider = useDataProvider();
     const notify = useNotify();
@@ -83,6 +85,16 @@ const MatchListActions = () => {
     return (
         <TopToolbar>
             {canCreateMatches && <CreateButton />}
+            {canCreateMatches && (
+                <Button
+                    color="primary"
+                    startIcon={<UploadFileIcon />}
+                    onClick={() => navigate('/matches/upload-excel')}
+                    sx={{ ml: 1 }}
+                >
+                    Upload Excel
+                </Button>
+            )}
             {canBackfillHighlights && (
                 <Button
                     variant="outlined"
