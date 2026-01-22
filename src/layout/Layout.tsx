@@ -82,6 +82,7 @@ const CustomMenu = () => {
       />
       {isSuperAdmin && <Menu.ResourceItem name="accounting" />}
       {isSuperAdmin && <Menu.ResourceItem name="promo-codes" />}
+      {isSuperAdmin && <Menu.ResourceItem name="seasons" />}
       {canViewUsers && (
         <MenuItemLink
           to="/updates"

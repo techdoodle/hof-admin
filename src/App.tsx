@@ -19,6 +19,7 @@ import { MatchStatsEdit } from './resources/matchStats';
 import { AccountingDashboard } from './resources/accounting';
 import { BallonDorLeaderboard } from './resources/footballChiefLeaderboard/BallonDorLeaderboard';
 import { PromoCodeList, PromoCodeCreate, PromoCodeEdit, PromoCodeShow } from './resources/promo-codes';
+import { SeasonList, SeasonCreate, SeasonEdit } from './resources/seasons';
 import { Updates } from './resources/updates/Updates';
 import { TicketList } from './resources/tickets/TicketList';
 import { TicketEdit } from './resources/tickets/TicketEdit';
@@ -134,6 +135,15 @@ const App = () => {
         show={PromoCodeShow}
         icon={LocalOfferIcon}
         options={{ label: 'Promo Codes' }}
+      />
+
+      {/* Seasons - Super Admin only (menu + backend will enforce) */}
+      <Resource
+        name="seasons"
+        list={SeasonList}
+        create={SeasonCreate}
+        edit={SeasonEdit}
+        options={{ label: 'Seasons' }}
       />
 
       {/* Tickets - Admin & Super Admin (access controlled by backend and menu) */}
