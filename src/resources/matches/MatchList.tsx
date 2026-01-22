@@ -27,6 +27,8 @@ import CancelIcon from '@mui/icons-material/Cancel';
 import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
 import ShareIcon from '@mui/icons-material/Share';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
+import ScienceIcon from '@mui/icons-material/Science';
+import CalculateIcon from '@mui/icons-material/Calculate';
 import { useDataProvider, useNotify } from 'react-admin';
 import { MatchCancelDialog } from './MatchCancelDialog';
 
@@ -145,6 +147,50 @@ const MatchActions = ({ record }: any) => {
         }
     };
 
+    const handlePushDummyStats = async (e: React.MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (!window.confirm('This will generate and push dummy stats for all participants. This is for testing only. Continue?')) {
+            return;
+        }
+        try {
+            notify('Generating dummy stats...', { type: 'info' });
+            const response = await dataProvider.custom(`admin/matches/${record.matchId}/push-dummy-stats`, {
+                method: 'POST',
+            });
+            notify(
+                `Dummy stats generated: ${response.data.data.processed}/${response.data.data.expected} players processed`,
+                { type: 'success' },
+            );
+            // Refresh the page to show updated stats
+            setTimeout(() => window.location.reload(), 1500);
+        } catch (err: any) {
+            notify(err?.message || 'Failed to generate dummy stats', { type: 'error' });
+        }
+    };
+
+    const handleRecalculateXp = async (e: React.MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (!window.confirm('This will recalculate XP for all players in this match. Continue?')) {
+            return;
+        }
+        try {
+            notify('Recalculating XP...', { type: 'info' });
+            const response = await dataProvider.custom(`admin/matches/${record.matchId}/recalculate-xp`, {
+                method: 'POST',
+            });
+            notify(
+                `XP recalculated: ${response.data.data.processed} players processed, ${response.data.data.errors} errors`,
+                { type: 'success' },
+            );
+            // Refresh the page to show updated XP
+            setTimeout(() => window.location.reload(), 1500);
+        } catch (err: any) {
+            notify(err?.message || 'Failed to recalculate XP', { type: 'error' });
+        }
+    };
+
     const handleShare = async (e: React.MouseEvent) => {
         e.preventDefault();
         e.stopPropagation();
@@ -215,6 +261,30 @@ Every player matters. Every moment counts.`;
                     variant="outlined"
                 >
                     Re-poll
+                </Button>
+            )}
+            {canManageParticipants && record.matchType === 'recorded' && (
+                <Button
+                    size="small"
+                    startIcon={<ScienceIcon />}
+                    onClick={handlePushDummyStats}
+                    variant="outlined"
+                    color="secondary"
+                    title="Generate dummy stats for testing (non-prod only - backend will reject in production)"
+                >
+                    Test Stats
+                </Button>
+            )}
+            {canManageParticipants && record.matchType === 'recorded' && (
+                <Button
+                    size="small"
+                    startIcon={<CalculateIcon />}
+                    onClick={handleRecalculateXp}
+                    variant="outlined"
+                    color="primary"
+                    title="Recalculate XP for all players in this match (only works if stats exist)"
+                >
+                    Recalc XP
                 </Button>
             )}
             <Button
