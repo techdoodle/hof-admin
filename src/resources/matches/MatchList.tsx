@@ -31,6 +31,7 @@ import ScienceIcon from '@mui/icons-material/Science';
 import CalculateIcon from '@mui/icons-material/Calculate';
 import { useDataProvider, useNotify } from 'react-admin';
 import { MatchCancelDialog } from './MatchCancelDialog';
+import { isProduction } from '../../config/environment';
 
 const matchFilters = [
     <SearchInput source="search" placeholder="Search matches..." alwaysOn />,
@@ -121,6 +122,7 @@ const MatchActions = ({ record }: any) => {
     const dataProvider = useDataProvider();
     const notify = useNotify();
     const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
+    const isProd = isProduction();
 
     const canEditMatches = ['football_chief', 'academy_admin', 'admin', 'super_admin', 'vendor'].includes(permissions);
     const canCancelMatches = ['super_admin', 'admin', 'vendor'].includes(permissions);
@@ -263,26 +265,26 @@ Every player matters. Every moment counts.`;
                     Re-poll
                 </Button>
             )}
-            {canManageParticipants && record.matchType === 'recorded' && (
+            {!isProd && canManageParticipants && record.matchType === 'recorded' && (
                 <Button
                     size="small"
                     startIcon={<ScienceIcon />}
                     onClick={handlePushDummyStats}
                     variant="outlined"
                     color="secondary"
-                    title="Generate dummy stats for testing (non-prod only - backend will reject in production)"
+                    title="Generate dummy stats for testing (non-prod only)"
                 >
                     Test Stats
                 </Button>
             )}
-            {canManageParticipants && record.matchType === 'recorded' && (
+            {!isProd && canManageParticipants && record.matchType === 'recorded' && (
                 <Button
                     size="small"
                     startIcon={<CalculateIcon />}
                     onClick={handleRecalculateXp}
                     variant="outlined"
                     color="primary"
-                    title="Recalculate XP for all players in this match (only works if stats exist)"
+                    title="Recalculate XP for all players in this match (non-prod only)"
                 >
                     Recalc XP
                 </Button>
