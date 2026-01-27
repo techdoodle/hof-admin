@@ -151,10 +151,10 @@ export const MatchCancelDialog: React.FC<MatchCancelDialogProps> = ({
                             </Typography>
                         </Box>
 
-                        {preview.confirmedBookings.length > 0 && (
+                        {(preview.confirmedBookings?.length ?? 0) > 0 && (
                             <Box mb={3}>
-                                <Typography variant="subtitle2" gutterBottom fontWeight="bold">
-                                    Bookings to be Refunded ({preview.confirmedBookings.length}):
+                                    <Typography variant="subtitle2" gutterBottom fontWeight="bold">
+                                        Bookings to be Refunded ({preview.confirmedBookings?.length ?? 0}):
                                 </Typography>
                                 <TableContainer component={Paper} variant="outlined">
                                     <Table size="small">
@@ -167,7 +167,7 @@ export const MatchCancelDialog: React.FC<MatchCancelDialogProps> = ({
                                             </TableRow>
                                         </TableHead>
                                         <TableBody>
-                                            {preview.confirmedBookings.map((booking) => (
+                                            {(preview.confirmedBookings ?? []).map((booking) => (
                                                 <TableRow key={booking.id}>
                                                     <TableCell>{booking.bookingReference}</TableCell>
                                                     <TableCell>{booking.email}</TableCell>
@@ -194,10 +194,10 @@ export const MatchCancelDialog: React.FC<MatchCancelDialogProps> = ({
                             </Box>
                         )}
 
-                        {preview.nonConfirmedBookings.length > 0 && (
+                        {(preview.nonConfirmedBookings?.length ?? 0) > 0 && (
                             <Box mb={3}>
                                 <Typography variant="subtitle2" gutterBottom>
-                                    Bookings to be Cancelled (No Refund) ({preview.nonConfirmedBookings.length}):
+                                    Bookings to be Cancelled (No Refund) ({preview.nonConfirmedBookings?.length ?? 0}):
                                 </Typography>
                                 <TableContainer component={Paper} variant="outlined">
                                     <Table size="small">
@@ -210,7 +210,7 @@ export const MatchCancelDialog: React.FC<MatchCancelDialogProps> = ({
                                             </TableRow>
                                         </TableHead>
                                         <TableBody>
-                                            {preview.nonConfirmedBookings.map((booking) => (
+                                            {(preview.nonConfirmedBookings ?? []).map((booking) => (
                                                 <TableRow key={booking.id}>
                                                     <TableCell>{booking.bookingReference}</TableCell>
                                                     <TableCell>{booking.email}</TableCell>
@@ -232,7 +232,8 @@ export const MatchCancelDialog: React.FC<MatchCancelDialogProps> = ({
                             </Box>
                         )}
 
-                        {preview.confirmedBookings.length === 0 && preview.nonConfirmedBookings.length === 0 && (
+                        {(preview.confirmedBookings?.length ?? 0) === 0 &&
+                         (preview.nonConfirmedBookings?.length ?? 0) === 0 && (
                             <Alert severity="info">
                                 This match has no active bookings to cancel.
                             </Alert>

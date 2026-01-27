@@ -16,12 +16,15 @@ import {
   useListContext,
   useNotify,
   useDataProvider,
+  useRecordContext,
 } from 'react-admin';
 import { useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, Typography, Box, Button, Divider, Chip, IconButton } from '@mui/material';
 import StarIcon from '@mui/icons-material/Star';
 import StarBorderIcon from '@mui/icons-material/StarBorder';
 import DeleteIcon from '@mui/icons-material/Delete';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import { ParticipantRemoveDialog } from './ParticipantRemoveDialog';
 
 type AdminRole = 'football_chief' | 'academy_admin' | 'admin' | 'super_admin';
@@ -57,6 +60,42 @@ const SerialNumberField = ({ label }: { label: string }) => {
         return index >= 0 ? index + 1 : '-';
       }}
     />
+  );
+};
+
+// Phone number field with local visibility toggle per row
+const PhoneNumberField: React.FC<{ label?: string }> = () => {
+  const record = useRecordContext<MatchParticipant>();
+  const [isVisible, setIsVisible] = useState(false);
+
+  if (!record) {
+    return null;
+  }
+
+  const userData = (record as any).userData;
+  const phoneNumber = userData?.phoneNumber;
+
+  if (!phoneNumber) {
+    return <Typography variant="body2" color="textSecondary">-</Typography>;
+  }
+
+  return (
+    <Box display="flex" alignItems="center" gap={1}>
+      <Typography variant="body2">
+        {isVisible ? phoneNumber : '***'}
+      </Typography>
+      <IconButton
+        size="small"
+        onClick={event => {
+          event.stopPropagation();
+          setIsVisible(prev => !prev);
+        }}
+        title={isVisible ? 'Hide phone number' : 'Show phone number'}
+        sx={{ p: 0.5 }}
+      >
+        {isVisible ? <VisibilityOffIcon fontSize="small" /> : <VisibilityIcon fontSize="small" />}
+      </IconButton>
+    </Box>
   );
 };
 
@@ -245,6 +284,7 @@ const ParticipantsList = ({ matchId, onMatchChange }: { matchId: string; onMatch
                 return '-';
               }}
             />
+            <PhoneNumberField label="Phone Number" />
             <FunctionField
               label="MVP"
               render={(record: MatchParticipant) => {
