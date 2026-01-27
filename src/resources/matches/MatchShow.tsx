@@ -195,6 +195,20 @@ export const MatchShow = () => {
           }
         />
         <FunctionField
+          label="Game Controller"
+          render={(record: any) =>
+            record?.gameController ?
+              <Typography>
+                {`${record.gameController.firstName} ${record.gameController.lastName}`}
+                <br />
+                {record.gameController.email}
+                <br />
+                {record.gameController.phoneNumber}
+              </Typography>
+              : '-'
+          }
+        />
+        <FunctionField
           label="Venue"
           render={(record: any) =>
             record?.venue ?

@@ -51,18 +51,20 @@ const PricingFields = () => {
         <NumberInput
           source="slotPrice"
           label="Slot Price (₹)"
-          min={0}
+          min={1}
+          validate={required()}
           fullWidth
-          helperText="Enter the price per slot"
+          helperText="Enter the price per slot (> 0)"
         />
       </Box>
       <Box flex="1 1 300px">
         <NumberInput
           source="offerPrice"
           label="Offer Price (₹)"
-          min={0}
+          min={1}
+          validate={required()}
           fullWidth
-          helperText="Enter discounted price (must be ≤ slot price)"
+          helperText="Enter discounted price (must be ≤ slot price and > 0)"
         />
       </Box>
     </>
@@ -203,6 +205,20 @@ export const MatchEdit = () => {
                 optionText="fullName"
                 validate={required()}
                 fullWidth
+                label="Football Chief"
+              />
+            </ReferenceInput>
+          </Box>
+          <Box flex="1 1 300px">
+            <ReferenceInput
+              source="gameController"
+              reference="chiefs"
+            >
+              <SelectInput
+                optionText="fullName"
+                validate={required()}
+                fullWidth
+                label="Game Controller"
               />
             </ReferenceInput>
           </Box>
@@ -216,7 +232,8 @@ export const MatchEdit = () => {
             <NumberInput
               source="footballChiefCost"
               label="Football Chief Cost (₹)"
-              min={0}
+              min={1}
+              validate={required()}
               fullWidth
               helperText="Cost paid to football chief for this match"
             />
@@ -225,7 +242,8 @@ export const MatchEdit = () => {
             <NumberInput
               source="venueCost"
               label="Venue Cost (₹)"
-              min={0}
+              min={1}
+              validate={required()}
               fullWidth
               helperText="Cost paid to venue for this match"
             />
