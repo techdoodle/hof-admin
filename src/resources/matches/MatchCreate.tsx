@@ -49,20 +49,20 @@ const PricingFields = () => {
         <NumberInput
           source="slotPrice"
           label="Slot Price (₹)"
-          min={0}
-          defaultValue={0}
+          min={1}
+          validate={required()}
           fullWidth
-          helperText="Base price per slot. Must be ≥ 0."
+          helperText="Base price per slot. Must be > 0."
         />
       </Box>
       <Box flex="1 1 300px">
         <NumberInput
           source="offerPrice"
           label="Offer Price (₹)"
-          min={0}
-          defaultValue={0}
+          min={1}
+          validate={required()}
           fullWidth
-          helperText="Discounted price. Must be ≤ slot price. Set equal to slot price for no discount."
+          helperText="Discounted price. Must be ≤ slot price and > 0. Set equal to slot price for no discount."
         />
       </Box>
     </>
@@ -201,6 +201,20 @@ export const MatchCreate = () => {
                 optionText="fullName"
                 validate={required()}
                 fullWidth
+                label="Football Chief"
+              />
+            </ReferenceInput>
+          </Box>
+          <Box flex="1 1 300px">
+            <ReferenceInput
+              source="gameController"
+              reference="chiefs"
+            >
+              <SelectInput
+                optionText="fullName"
+                validate={required()}
+                fullWidth
+                label="Game Controller"
               />
             </ReferenceInput>
           </Box>
@@ -214,7 +228,8 @@ export const MatchCreate = () => {
             <NumberInput
               source="footballChiefCost"
               label="Football Chief Cost (₹)"
-              min={0}
+              min={1}
+              validate={required()}
               fullWidth
               helperText="Cost paid to football chief for this match"
             />
@@ -223,7 +238,8 @@ export const MatchCreate = () => {
             <NumberInput
               source="venueCost"
               label="Venue Cost (₹)"
-              min={0}
+              min={1}
+              validate={required()}
               fullWidth
               helperText="Cost paid to venue for this match"
             />

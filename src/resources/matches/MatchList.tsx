@@ -55,6 +55,7 @@ const matchFilters = [
     <ReferenceInput source="footballChief" reference="chiefs" label="Football Chief">
         <SelectInput optionText="fullName" optionValue="id" fullWidth />
     </ReferenceInput>,
+    // (Optional) Game Controller filter can be added later if needed
 ];
 
 const MatchListActions = () => {
@@ -453,7 +454,17 @@ export const MatchList = () => {
                 <FunctionField
                     label="Football Chief"
                     render={(record: any) =>
-                        record.footballChief ? `${record.footballChief.firstName} ${record.footballChief.lastName}` : '-'
+                        record.footballChief
+                            ? `${record.footballChief.firstName} ${record.footballChief.lastName}`
+                            : '-'
+                    }
+                />
+                <FunctionField
+                    label="Game Controller"
+                    render={(record: any) =>
+                        record.gameController
+                            ? `${record.gameController.firstName} ${record.gameController.lastName}`
+                            : '-'
                     }
                 />
                 <FunctionField
@@ -478,15 +489,18 @@ export const MatchList = () => {
                             return (
                                 <div>
                                     <Chip label={`₹${record.offerPrice}`} color="error" size="small" />
-                                    <Chip label={`₹${record.slotPrice}`} color="default" size="small" style={{ textDecoration: 'line-through', marginLeft: 4 }} />
+                                    <Chip
+                                        label={`₹${record.slotPrice}`}
+                                        color="default"
+                                        size="small"
+                                        style={{ textDecoration: 'line-through', marginLeft: 4 }}
+                                    />
                                 </div>
                             );
                         }
                         return <Chip label={`₹${record.slotPrice}`} color="primary" size="small" />;
                     }}
                 />
-                <DateField source="createdAt" label="Created At" showTime />
-                <DateField source="updatedAt" label="Updated At" showTime />
             </Datagrid>
         </List>
         </>

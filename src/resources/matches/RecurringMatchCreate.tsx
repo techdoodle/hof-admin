@@ -157,6 +157,7 @@ export const RecurringMatchCreate: React.FC = () => {
       // Extract venue and footballChief IDs if they're objects
       const venueId = typeof formValues.venue === 'object' ? formValues.venue?.id : formValues.venue;
       const footballChiefId = typeof formValues.footballChief === 'object' ? formValues.footballChief?.id : formValues.footballChief;
+      const gameControllerId = typeof formValues.gameController === 'object' ? formValues.gameController?.id : formValues.gameController;
       const matchTypeId = typeof formValues.matchTypeId === 'object' ? formValues.matchTypeId?.id : formValues.matchTypeId;
 
       const payload = {
@@ -167,14 +168,17 @@ export const RecurringMatchCreate: React.FC = () => {
         timeSlots: timeSlots.filter(slot => slot.startTime && slot.endTime),
         venue: venueId,
         footballChief: footballChiefId,
+        gameController: gameControllerId ?? footballChiefId,
         matchType: formValues.matchType,
         matchTypeId: matchTypeId || formValues.matchTypeId,
-        slotPrice: formValues.slotPrice || 0,
-        offerPrice: formValues.offerPrice || 0,
+        slotPrice: formValues.slotPrice,
+        offerPrice: formValues.offerPrice,
         playerCapacity: formValues.playerCapacity,
         bufferCapacity: formValues.bufferCapacity || 0,
         teamAName: formValues.teamAName || 'Home',
         teamBName: formValues.teamBName || 'Away',
+        footballChiefCost: formValues.footballChiefCost,
+        venueCost: formValues.venueCost,
       };
 
       const result = await dataProvider.custom('admin/matches/recurring', {
@@ -357,7 +361,12 @@ export const RecurringMatchCreate: React.FC = () => {
           </Box>
           <Box flex="1 1 300px">
             <ReferenceInput source="footballChief" reference="chiefs">
-              <SelectInput optionText="fullName" validate={required()} fullWidth />
+              <SelectInput optionText="fullName" validate={required()} fullWidth label="Football Chief" />
+            </ReferenceInput>
+          </Box>
+          <Box flex="1 1 300px">
+            <ReferenceInput source="gameController" reference="chiefs">
+              <SelectInput optionText="fullName" validate={required()} fullWidth label="Game Controller" />
             </ReferenceInput>
           </Box>
         </Box>
@@ -370,8 +379,8 @@ export const RecurringMatchCreate: React.FC = () => {
             <NumberInput
               source="slotPrice"
               label="Slot Price (₹)"
-              min={0}
-              defaultValue={0}
+              min={1}
+              validate={required()}
               fullWidth
             />
           </Box>
@@ -379,8 +388,8 @@ export const RecurringMatchCreate: React.FC = () => {
             <NumberInput
               source="offerPrice"
               label="Offer Price (₹)"
-              min={0}
-              defaultValue={0}
+              min={1}
+              validate={required()}
               fullWidth
             />
           </Box>
@@ -420,6 +429,30 @@ export const RecurringMatchCreate: React.FC = () => {
               source="teamBName"
               label="Team B Name"
               defaultValue="Away"
+              fullWidth
+            />
+          </Box>
+        </Box>
+
+        <Typography variant="h6" gutterBottom style={{ marginTop: 24 }}>
+          Match Costs
+        </Typography>
+        <Box display="flex" flexWrap="wrap" gap={2} sx={{ mb: 3 }}>
+          <Box flex="1 1 300px">
+            <NumberInput
+              source="footballChiefCost"
+              label="Football Chief Cost (₹)"
+              min={1}
+              validate={required()}
+              fullWidth
+            />
+          </Box>
+          <Box flex="1 1 300px">
+            <NumberInput
+              source="venueCost"
+              label="Venue Cost (₹)"
+              min={1}
+              validate={required()}
               fullWidth
             />
           </Box>
