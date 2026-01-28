@@ -1,3 +1,10 @@
+## v1.3.0 (2026-01-28)
+
+### Changed
+- Player stats upload flow (`PlayerNationUpload.tsx`):
+  - When recording or managing 360° videos for players, the UI now shows only a masked identifier based on the last 4 digits of the player’s phone number instead of the full phone number.
+  - This reduces exposure of sensitive contact data while still giving admins a stable way to distinguish players during video capture.
+
 ## v1.2.0 (2025-01-21)
 
 ### Added

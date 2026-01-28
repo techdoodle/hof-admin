@@ -1,3 +1,15 @@
+## v1.3.0 (2026-01-28)
+
+### What changed
+- In the **Submit Match for Stats** screen, when you are working on 360° videos for each player, the player header now shows a masked phone identifier with only the last 4 digits (for example `(**1234)`) instead of the full phone number.
+- The 360° video recorder dialog title also includes this masked identifier so you can tell players apart without seeing their full phone numbers.
+
+### How to test
+1. Open any match and click the action to **Submit Match for Stats**.
+2. Go to the **Players** step and expand a player accordion; confirm you see their name, jersey number, and a masked identifier like `(**1234)` instead of the full phone number.
+3. Click **Upload 360° Video** for a player and check the dialog title: it should read something like “Record 360° Video for John Doe (**1234)”.
+4. Verify that uploading or retaking videos still works as before.
+
 ## v1.2.0 (2025-01-21)
 
 ### What changed
