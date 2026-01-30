@@ -57,6 +57,14 @@ interface MatchInfo {
   teamBScore?: number;
 }
 
+const getMaskedPhone = (phone?: string) => {
+  if (!phone) return '';
+  const digits = phone.replace(/\D/g, '');
+  if (!digits) return '';
+  const last4 = digits.slice(-4);
+  return `(**${last4})`;
+};
+
 const PlayerNationUpload: React.FC = () => {
   const [searchParams] = useSearchParams();
   const matchId = searchParams.get('matchId');
@@ -703,7 +711,7 @@ const PlayerNationUpload: React.FC = () => {
             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
               <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
                 <Typography sx={{ flexGrow: 1 }}>
-                  {player.name} {player.jerseyNumber && `#${player.jerseyNumber}`}
+                  {player.name} {player.jerseyNumber && `#${player.jerseyNumber}`} {getMaskedPhone(player.phoneNumber)}
                 </Typography>
                 <Chip 
                   label={player.team} 
@@ -913,7 +921,18 @@ const PlayerNationUpload: React.FC = () => {
         open={videoRecorderOpen}
         onClose={() => setVideoRecorderOpen(false)}
         onVideoRecorded={handleVideoRecorded}
-        playerName={players.find(p => p.id === currentPlayerId)?.name || 'Player'}
+        playerName={
+          (() => {
+            const currentPlayer = players.find(p => p.id === currentPlayerId);
+            if (!currentPlayer) {
+              return 'Player';
+            }
+            const maskedPhone = getMaskedPhone(currentPlayer.phoneNumber);
+            return maskedPhone
+              ? `${currentPlayer.name} ${maskedPhone}`
+              : currentPlayer.name;
+          })()
+        }
       />
     </Box>
   );
