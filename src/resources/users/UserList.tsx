@@ -110,6 +110,7 @@ export const UserList = () => {
                 <TextField source="lastName" label="Last Name" />
                 <TextField source="phoneNumber" label="Phone" />
                 <EmailField source="email" />
+                <TextField source="city.cityName" label="City" emptyText="-" />
                 <RoleField source="role" label={"Role"} />
                 <SelectField
                     source="gender"
